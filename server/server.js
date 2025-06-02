@@ -12,6 +12,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Routes
+const userRoutes = require('./routes/userRoutes');
+const authRoutes = require('./routes/authRoutes');
+app.use('/api', userRoutes);
+app.use('/api/auth', authRoutes);
+
 // Test route
 app.get('/', (req, res) => {
     res.send('University Attendance Tracker API is running');
@@ -19,10 +25,7 @@ app.get('/', (req, res) => {
 
 // MongoDB connection
 mongoose
-    .connect(process.env.MONGO_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
-    })
+    .connect(process.env.MONGO_URI)
     .then(() => console.log('MongoDB connected'))
     .catch((err) => console.log('MongoDB connection error:', err));
 
