@@ -1,0 +1,4 @@
+email,date,present
+student@example.com,6/4/2025,TRUE
+student@example.com,6/5/2025,TRUE
+student@example.com,6/6/2025,TRUE
