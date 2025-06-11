@@ -18,7 +18,7 @@ router.post('/auth/login', authController.login);
 router.get('/departments', authMiddleware, restrictTo('admin'), adminController.getDepartments);
 router.post('/departments', authMiddleware, restrictTo('admin'), adminController.addDepartment);
 router.post('/courses', authMiddleware, restrictTo('admin'), adminController.addCourse);
-router.post('/courses/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), adminController.bulkUploadCourses); // New route
+router.post('/courses/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), adminController.bulkUploadCourses);
 router.post('/notices', authMiddleware, restrictTo('admin'), adminController.addNotice);
 router.post('/form-fill-up', authMiddleware, restrictTo('admin'), upload.single('file'), adminController.setFormFillUp);
 router.get('/students/submit-form/status', authMiddleware, restrictTo('admin'), adminController.getFormSubmissions);
@@ -28,5 +28,9 @@ router.post('/students/submit-form', authMiddleware, restrictTo('student'), dash
 router.post('/teachers/upload-attendance', authMiddleware, restrictTo('teacher'), upload.single('file'), teacherController.uploadAttendance);
 router.post('/teachers/upload-marks', authMiddleware, restrictTo('teacher'), teacherController.uploadMarks);
 router.get('/teachers/students', authMiddleware, restrictTo('teacher'), teacherController.getStudentsBySubject);
+router.post('/teachers/details', authMiddleware, restrictTo('admin'), adminController.addTeacherDetails); 
+router.post('/students/details', authMiddleware, restrictTo('admin'), adminController.addStudentDetails); 
+
+
 
 module.exports = router;

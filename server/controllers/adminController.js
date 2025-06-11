@@ -2,6 +2,8 @@ const User = require('../models/User');
 const Department = require('../models/Department');
 const Course = require('../models/Course');
 const Notice = require('../models/Notice');
+const TeacherDetail = require('../models/TeacherDetails');
+const StudentDetail = require('../models/StudentDetails');
 const multer = require('multer');
 const fs = require('fs').promises;
 const csv = require('csv-parser');
@@ -148,6 +150,70 @@ exports.getFormSubmissions = async (req, res) => {
         // Placeholder: Fetch form submissions
         const submissions = await api.get('/students/submit-form/status'); // Adjust based on actual endpoint
         res.status(200).json(submissions.data);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.addTeacherDetails = async (req, res) => {
+    try {
+        const { fullName, email, phoneNumber, address, department, designation } = req.body;
+        const user = await User.findOne({ email, role: 'teacher' });
+        if (!user) {
+            return res.status(400).json({ message: 'No matching teacher email found in user list' });
+        }
+        const existingDetail = await TeacherDetail.findOne({ email });
+        if (existingDetail) {
+            return res.status(400).json({ message: 'Teacher details already exist for this email' });
+        }
+        const selectedDept = await Department.findById(department);
+        if (!selectedDept) {
+            return res.status(400).json({ message: 'Invalid department' });
+        }
+        const teacherDetail = new TeacherDetail({
+            fullName,
+            email,
+            phoneNumber,
+            address,
+            department: selectedDept._id,
+            departmentName: selectedDept.name, // Set department name
+            designation,
+            user: user._id,
+        });
+        await teacherDetail.save();
+        res.status(201).json({ message: 'Teacher details added successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.addStudentDetails = async (req, res) => {
+    try {
+        const { fullName, email, phoneNumber, enrollmentYear, guardianContact, department } = req.body;
+        const user = await User.findOne({ email, role: 'student' });
+        if (!user) {
+            return res.status(400).json({ message: 'No matching student email found in user list' });
+        }
+        const existingDetail = await StudentDetail.findOne({ email });
+        if (existingDetail) {
+            return res.status(400).json({ message: 'Student details already exist for this email' });
+        }
+        const selectedDept = await Department.findById(department);
+        if (!selectedDept) {
+            return res.status(400).json({ message: 'Invalid department' });
+        }
+        const studentDetail = new StudentDetail({
+            fullName,
+            email,
+            phoneNumber,
+            enrollmentYear,
+            guardianContact,
+            department: selectedDept._id,
+            departmentName: selectedDept.name, // Set department name
+            user: user._id,
+        });
+        await studentDetail.save();
+        res.status(201).json({ message: 'Student details added successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }

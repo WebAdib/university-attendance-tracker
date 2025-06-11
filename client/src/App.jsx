@@ -16,6 +16,8 @@ import AddDepartment from './pages/AddDepartment';
 import AddCourses from './pages/AddCourses';
 import AddNotice from './pages/AddNotice';
 import FormFillUp from './pages/FormFillUp';
+import AddTeacherDetails from './pages/AddTeacherDetails';
+import AddStudentDetails from './pages/AddStudentDetails';
 
 function App() {
     return (
@@ -38,6 +40,8 @@ function App() {
                 <Route path="/teachers/student-list" element={<StudentList />} />
                 <Route path="/teachers/give-attendance" element={<GiveAttendance />} />
                 <Route path="/teachers/give-marks" element={<GiveMarks />} />
+                <Route path="/admin-panel/add-teachers-details" element={<AddTeacherDetails />} />
+                <Route path="/admin-panel/add-students-details" element={<AddStudentDetails />} />
             </Routes>
         </Router>
     );

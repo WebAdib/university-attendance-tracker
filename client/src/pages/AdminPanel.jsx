@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../utils/auth';
 import Sidebar from '../components/Sidebar';
-import { FaUsers, FaPlus, FaTrash, FaBuilding, FaBookOpen, FaBell, FaClipboardList } from 'react-icons/fa';
+import { FaUsers, FaPlus, FaTrash, FaBuilding, FaBookOpen, FaBell, FaClipboardList, FaChalkboardTeacher } from 'react-icons/fa';
 
 const AdminPanel = () => {
     const navigate = useNavigate();
@@ -74,6 +74,26 @@ const AdminPanel = () => {
                         <div>
                             <h2 className="text-xl font-semibold text-gray-800">Add Courses</h2>
                             <p className="text-gray-600">Add courses by department</p>
+                        </div>
+                    </a>
+                    <a
+                        href="/admin-panel/add-teachers-details"
+                        className="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4 transform transition-all duration-300 hover:shadow-lg hover:bg-blue-50"
+                    >
+                        <FaChalkboardTeacher className="text-4xl text-indigo-600" />
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-800">Add Teachers Details</h2>
+                            <p className="text-gray-600">Manage teacher information</p>
+                        </div>
+                    </a>
+                    <a
+                        href="/admin-panel/add-students-details"
+                        className="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4 transform transition-all duration-300 hover:shadow-lg hover:bg-blue-50"
+                    >
+                        <FaUsers className="text-4xl text-pink-600" />
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-800">Add Student Details</h2>
+                            <p className="text-gray-600">Manage student information</p>
                         </div>
                     </a>
                     <a

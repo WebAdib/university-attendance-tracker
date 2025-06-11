@@ -24,28 +24,26 @@ const Sidebar = () => {
             </div>
             <nav className="flex-1">
                 {!isAdminRoute && !isTeacherRoute && (
-                    <a
-                        href="/dashboard"
-                        className={`flex items-center p-4 ${location.pathname === '/dashboard' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
-                    >
-                        <FaHome className="mr-3" /> Dashboard
-                    </a>
-                )}
-                {!isAdminRoute && !isTeacherRoute && (
-                    <a
-                        href="/attendance-history"
-                        className={`flex items-center p-4 ${location.pathname === '/attendance-history' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
-                    >
-                        <FaHistory className="mr-3" /> Attendance History
-                    </a>
-                )}
-                {!isAdminRoute && !isTeacherRoute && (
-                    <a
-                        href="/submit-form"
-                        className={`flex items-center p-4 ${location.pathname === '/submit-form' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
-                    >
-                        <FaFileAlt className="mr-3" /> Submit Form
-                    </a>
+                    <>
+                        <a
+                            href="/dashboard"
+                            className={`flex items-center p-4 ${location.pathname === '/dashboard' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaHome className="mr-3" /> Dashboard
+                        </a>
+                        <a
+                            href="/attendance-history"
+                            className={`flex items-center p-4 ${location.pathname === '/attendance-history' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaHistory className="mr-3" /> Attendance History
+                        </a>
+                        <a
+                            href="/submit-form"
+                            className={`flex items-center p-4 ${location.pathname === '/submit-form' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaFileAlt className="mr-3" /> Submit Form
+                        </a>
+                    </>
                 )}
                 {isAdmin && isAdminRoute && (
                     <>
@@ -84,6 +82,18 @@ const Sidebar = () => {
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-courses' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaBookOpen className="mr-3" /> Add Courses
+                        </a>
+                        <a
+                            href="/admin-panel/add-teachers-details"
+                            className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-teachers-details' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaChalkboardTeacher className="mr-3" /> Add Teachers Details
+                        </a>
+                        <a
+                            href="/admin-panel/add-students-details"
+                            className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-students-details' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaUsers className="mr-3" /> Add Student Details
                         </a>
                         <a
                             href="/admin-panel/add-notice"
