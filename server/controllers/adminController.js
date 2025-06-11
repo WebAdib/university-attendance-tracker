@@ -4,6 +4,7 @@ const Course = require('../models/Course');
 const Notice = require('../models/Notice');
 const multer = require('multer');
 const fs = require('fs').promises;
+const csv = require('csv-parser');
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -71,6 +72,52 @@ exports.addCourse = async (req, res) => {
         await course.save();
         res.status(201).json({ message: 'Course added successfully' });
     } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.bulkUploadCourses = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        const results = [];
+        const stream = require('fs').createReadStream(req.file.path).pipe(csv());
+
+        for await (const data of stream) {
+            results.push(data);
+        }
+
+        console.log('Parsed CSV data:', results);
+
+        for (const record of results) {
+            const { name, courseCode, creditHours, departmentName, semester } = record;
+            if (name && courseCode && creditHours && departmentName && semester) {
+                const department = await Department.findOne({ name: departmentName });
+                if (!department) {
+                    console.log(`Department not found: ${departmentName}`);
+                    continue;
+                }
+                const course = new Course({
+                    name,
+                    courseCode,
+                    creditHours: parseInt(creditHours),
+                    department: department._id,
+                    departmentName,
+                    semester: parseInt(semester),
+                });
+                await course.save();
+                console.log(`Course created: ${name}`);
+            } else {
+                console.log(`Invalid record: ${JSON.stringify(record)}`);
+            }
+        }
+
+        await fs.unlink(req.file.path);
+        res.status(200).json({ message: 'Bulk courses uploaded successfully' });
+    } catch (error) {
+        console.error('Bulk upload error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };

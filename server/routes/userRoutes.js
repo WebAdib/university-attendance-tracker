@@ -15,9 +15,10 @@ router.get('/users', authMiddleware, restrictTo('admin'), adminController.getUse
 router.delete('/users', authMiddleware, restrictTo('admin'), adminController.deleteUser);
 router.post('/users/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), userController.bulkUploadUsers);
 router.post('/auth/login', authController.login);
-router.get('/departments', authMiddleware, restrictTo('admin'), adminController.getDepartments); // New route
+router.get('/departments', authMiddleware, restrictTo('admin'), adminController.getDepartments);
 router.post('/departments', authMiddleware, restrictTo('admin'), adminController.addDepartment);
 router.post('/courses', authMiddleware, restrictTo('admin'), adminController.addCourse);
+router.post('/courses/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), adminController.bulkUploadCourses); // New route
 router.post('/notices', authMiddleware, restrictTo('admin'), adminController.addNotice);
 router.post('/form-fill-up', authMiddleware, restrictTo('admin'), upload.single('file'), adminController.setFormFillUp);
 router.get('/students/submit-form/status', authMiddleware, restrictTo('admin'), adminController.getFormSubmissions);

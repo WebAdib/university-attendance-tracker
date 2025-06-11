@@ -7,9 +7,10 @@ import Sidebar from '../components/Sidebar';
 const AddCourses = () => {
     const [courseCode, setCourseCode] = useState('');
     const [courseName, setCourseName] = useState('');
-    const [creditHours, setCreditHours] = useState(''); // New state for credit hours
+    const [creditHours, setCreditHours] = useState('');
     const [department, setDepartment] = useState('');
     const [semester, setSemester] = useState('');
+    const [file, setFile] = useState(null); // New state for CSV file
     const [departments, setDepartments] = useState([]);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -29,16 +30,16 @@ const AddCourses = () => {
         fetchDepartments();
     }, []);
 
-    const handleSubmit = async (e) => {
+    const handleSingleSubmit = async (e) => {
         e.preventDefault();
         if (!department || !semester || !courseCode || !courseName || !creditHours) {
-            setError('All fields are required');
+            setError('All fields are required for single course');
             return;
         }
 
         try {
             const response = await api.post('/courses', {
-                name: courseName, // Only course name
+                name: courseName,
                 courseCode,
                 creditHours: parseInt(creditHours),
                 department,
@@ -59,6 +60,32 @@ const AddCourses = () => {
         }
     };
 
+    const handleBulkSubmit = async (e) => {
+        e.preventDefault();
+        if (!file) {
+            setError('Please upload a CSV file');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        try {
+            const response = await api.post('/courses/bulk', formData, {
+                headers: {
+                    Authorization: `Bearer ${getAuthToken()}`,
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            setMessage(response.data.message);
+            setError('');
+            setFile(null);
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to upload bulk courses');
+            setMessage('');
+        }
+    };
+
     return (
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
@@ -67,7 +94,7 @@ const AddCourses = () => {
                 <div className="bg-white p-6 rounded-xl shadow-md">
                     {message && <p className="text-green-600 mb-4">{message}</p>}
                     {error && <p className="text-red-500 mb-4">{error}</p>}
-                    <form onSubmit={handleSubmit} className="space-y-4">
+                    <form onSubmit={handleSingleSubmit} className="space-y-4 mb-6">
                         <div>
                             <label className="block text-gray-700 font-semibold mb-1">Course Code</label>
                             <input
@@ -135,7 +162,25 @@ const AddCourses = () => {
                             type="submit"
                             className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-300"
                         >
-                            Add Course
+                            Add Single Course
+                        </button>
+                    </form>
+                    <form onSubmit={handleBulkSubmit} className="space-y-4">
+                        <div>
+                            <label className="block text-gray-700 font-semibold mb-1">Upload CSV File</label>
+                            <input
+                                type="file"
+                                accept=".csv"
+                                onChange={(e) => setFile(e.target.files[0])}
+                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
+                            />
+                        </div>
+                        <button
+                            type="submit"
+                            className="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition-all duration-300"
+                        >
+                            Upload Bulk Courses
                         </button>
                     </form>
                 </div>
