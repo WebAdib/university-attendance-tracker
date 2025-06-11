@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import api from '../../services/api';
+import { login } from '../../services/api'; // Use the exported login function
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -11,14 +11,16 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/login', { email, password });
+            console.log('Login attempt:', { email, password }); // Debug log
+            const response = await login(email, password); // Use the login function
+            console.log('Login response:', response.data); // Debug log
             localStorage.setItem('token', response.data.token);
-            // Redirect based on role (simplified for now)
-            const decoded = JSON.parse(atob(response.data.token.split('.')[1]));
-            if (decoded.role === 'admin') navigate('/admin-panel');
-            else if (decoded.role === 'teacher') navigate('/teachers/dashboard'); // New teacher route
+            const { role } = response.data.user; // Use the user object from response
+            if (role === 'admin') navigate('/admin-panel');
+            else if (role === 'teacher') navigate('/teachers/dashboard');
             else navigate('/dashboard');
         } catch (err) {
+            console.error('Login error:', err.response?.data || err.message); // Debug log
             setError(err.response?.data?.message || 'Login failed');
         }
     };
