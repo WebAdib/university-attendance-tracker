@@ -8,6 +8,7 @@ const AddUser = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('student');
+    const [name, setName] = useState(''); // Added name field
     const [file, setFile] = useState(null);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
@@ -16,11 +17,12 @@ const AddUser = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await api.post('/users', { email, password, role }, {
+            const response = await api.post('/users', { name, email, password, role }, {
                 headers: { Authorization: `Bearer ${getAuthToken()}` },
             });
             setMessage('User created successfully');
             setError('');
+            setName('');
             setEmail('');
             setPassword('');
             setRole('student');
@@ -66,6 +68,17 @@ const AddUser = () => {
                     {error && <p className="text-red-500 mb-4">{error}</p>}
                     <form onSubmit={handleSubmit} className="space-y-4 mb-6">
                         <div>
+                            <label className="block text-gray-700 font-semibold mb-1">Name</label>
+                            <input
+                                type="text"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter name"
+                                required
+                            />
+                        </div>
+                        <div>
                             <label className="block text-gray-700 font-semibold mb-1">Email</label>
                             <input
                                 type="email"
@@ -108,7 +121,7 @@ const AddUser = () => {
                     </form>
                     <form onSubmit={handleBulkUpload} className="space-y-4">
                         <div>
-                            <label className="block text-gray-700 font-semibold mb-1">Upload CSV (email,password,role)</label>
+                            <label className="block text-gray-700 font-semibold mb-1">Upload CSV (name,email,password,role)</label>
                             <input
                                 type="file"
                                 accept=".csv"

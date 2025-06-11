@@ -1,18 +1,64 @@
 const User = require('../models/User');
-const StudentData = require('../models/StudentData');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
-
+const bcrypt = require('bcrypt');
+const csv = require('csv-parser');
+const fs = require('fs').promises;
 
 exports.createUser = async (req, res) => {
     try {
         const { name, email, password, role } = req.body;
+        if (!name || !email || !password || !['student', 'teacher', 'admin'].includes(role)) {
+            return res.status(400).json({ message: 'Invalid input' });
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
         const user = new User({ name, email, password: hashedPassword, role });
         await user.save();
         res.status(201).json({ message: 'User created successfully' });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Create user error:', error);
+        if (error.code === 11000) {
+            res.status(400).json({ message: 'Email already exists' });
+        } else {
+            res.status(500).json({ message: 'Server error' });
+        }
+    }
+};
+
+exports.bulkUploadUsers = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
+
+        const results = [];
+        const stream = require('fs').createReadStream(req.file.path).pipe(csv());
+
+        for await (const data of stream) {
+            results.push(data);
+        }
+
+        console.log('Parsed CSV data:', results);
+
+        for (const record of results) {
+            const { name, email, password, role } = record;
+            if (name && email && password && ['student', 'teacher', 'admin'].includes(role)) {
+                const hashedPassword = await bcrypt.hash(password, 10);
+                const user = new User({ name, email, password: hashedPassword, role });
+                await user.save();
+                console.log(`User created: ${email}`);
+            } else {
+                console.log(`Invalid record: ${JSON.stringify(record)}`);
+            }
+        }
+
+        await fs.unlink(req.file.path);
+        res.status(200).json({ message: 'Bulk users uploaded successfully' });
+    } catch (error) {
+        console.error('Bulk upload error:', error);
+        if (error.code === 11000) {
+            res.status(400).json({ message: 'One or more emails already exist' });
+        } else {
+            res.status(500).json({ message: 'Server error' });
+        }
     }
 };
 
