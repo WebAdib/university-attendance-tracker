@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../../services/api';
+import api from '../../services/api';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -11,18 +11,22 @@ const Login = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await login(email, password);
+            const response = await api.post('/login', { email, password });
             localStorage.setItem('token', response.data.token);
-            navigate('/dashboard');
+            // Redirect based on role (simplified for now)
+            const decoded = JSON.parse(atob(response.data.token.split('.')[1]));
+            if (decoded.role === 'admin') navigate('/admin-panel');
+            else if (decoded.role === 'teacher') navigate('/teachers/dashboard'); // New teacher route
+            else navigate('/dashboard');
         } catch (err) {
             setError(err.response?.data?.message || 'Login failed');
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-cover bg-center" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1600585154340-be6161a56a0c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80')" }}>
-            <div className="bg-white bg-opacity-90 p-8 rounded-xl shadow-2xl w-full max-w-md transform transition-all duration-500 hover:scale-105">
-                <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">University Login</h1>
+        <div className="flex items-center justify-center min-h-screen bg-gray-100">
+            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md">
+                <h1 className="text-3xl font-bold text-center mb-6 text-blue-900">University Login</h1>
                 {error && <p className="text-red-500 text-center mb-4">{error}</p>}
                 <form onSubmit={handleSubmit} className="space-y-4">
                     <div>
@@ -31,7 +35,7 @@ const Login = () => {
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter your email"
                             required
                         />
@@ -42,7 +46,7 @@ const Login = () => {
                             type="password"
                             value={password}
                             onChange={(e) => setPassword(e.target.value)}
-                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
+                            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             placeholder="Enter your password"
                             required
                         />
