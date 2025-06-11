@@ -33,6 +33,15 @@ exports.deleteUser = async (req, res) => {
     }
 };
 
+exports.getDepartments = async (req, res) => {
+    try {
+        const departments = await Department.find().select('name');
+        res.status(200).json(departments);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
 exports.addDepartment = async (req, res) => {
     try {
         const { name } = req.body;
@@ -46,8 +55,19 @@ exports.addDepartment = async (req, res) => {
 
 exports.addCourse = async (req, res) => {
     try {
-        const { name, department } = req.body;
-        const course = new Course({ name, department });
+        const { name, courseCode, creditHours, department, semester } = req.body;
+        const selectedDept = await Department.findById(department);
+        if (!selectedDept) {
+            return res.status(400).json({ message: 'Invalid department' });
+        }
+        const course = new Course({
+            name,
+            courseCode,
+            creditHours,
+            department,
+            departmentName: selectedDept.name,
+            semester,
+        });
         await course.save();
         res.status(201).json({ message: 'Course added successfully' });
     } catch (error) {

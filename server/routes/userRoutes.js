@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const userController = require('../controllers/userController');
-const authController = require('../controllers/authController'); // Ensure this is included
+const authController = require('../controllers/authController');
 const dashboardController = require('../controllers/dashboardController');
 const teacherController = require('../controllers/teacherController');
 const adminController = require('../controllers/adminController');
@@ -15,6 +15,7 @@ router.get('/users', authMiddleware, restrictTo('admin'), adminController.getUse
 router.delete('/users', authMiddleware, restrictTo('admin'), adminController.deleteUser);
 router.post('/users/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), userController.bulkUploadUsers);
 router.post('/auth/login', authController.login);
+router.get('/departments', authMiddleware, restrictTo('admin'), adminController.getDepartments); // New route
 router.post('/departments', authMiddleware, restrictTo('admin'), adminController.addDepartment);
 router.post('/courses', authMiddleware, restrictTo('admin'), adminController.addCourse);
 router.post('/notices', authMiddleware, restrictTo('admin'), adminController.addNotice);
