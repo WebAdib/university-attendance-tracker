@@ -223,12 +223,30 @@ exports.addStudentDetails = async (req, res) => {
 exports.getTeachersByDepartment = async (req, res) => {
     try {
         const { department } = req.query;
-        const teachers = await TeacherDetail.find({ department }).select('fullName _id email department');
-        console.log('Teachers found:', teachers); // Debug log
-        if (!teachers.length) {
-            return res.status(404).json({ message: 'No teachers found for this department' });
+        if (department) {
+            const deptTeachers = await TeacherDetail.find({ department }).select('fullName email departmentName');
+            res.status(200).json(deptTeachers.sort((a, b) => a.fullName.localeCompare(b.fullName)));
+        } else {
+            const allTeachers = await TeacherDetail.find().select('fullName email departmentName');
+            res.status(200).json(allTeachers.sort((a, b) => a.fullName.localeCompare(b.fullName)));
         }
-        res.status(200).json(teachers);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getTeacherDetails = async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+        const teacherDetail = await TeacherDetail.findOne({ email }).select('fullName email phoneNumber address department designation');
+        if (teacherDetail && teacherDetail.department) {
+            const department = await Department.findById(teacherDetail.department).select('name');
+            teacherDetail.department = department ? { name: department.name } : null;
+        }
+        res.status(200).json(teacherDetail || {});
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
@@ -347,6 +365,18 @@ exports.saveStudentStatus = async (req, res) => {
         res.status(201).json({ message: 'Student status saved successfully' });
     } catch (error) {
         console.error('Save student status error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getDepartmentById = async (req, res) => {
+    try {
+        const department = await Department.findById(req.params.id).select('name');
+        if (!department) {
+            return res.status(404).json({ message: 'Department not found' });
+        }
+        res.status(200).json(department);
+    } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 };
