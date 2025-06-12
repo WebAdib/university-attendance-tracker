@@ -5,6 +5,7 @@ const Notice = require('../models/Notice');
 const TeacherDetail = require('../models/TeacherDetails');
 const StudentDetail = require('../models/StudentDetails');
 const TeacherStatus = require('../models/TeacherStatus');
+const StudentStatus = require('../models/StudentStatus');
 const multer = require('multer');
 const fs = require('fs').promises;
 const csv = require('csv-parser');
@@ -287,6 +288,65 @@ exports.addTeacherStatus = async (req, res) => {
         } else if (error.message.includes('Duplicate course codes are not allowed')) {
             return res.status(400).json({ message: 'Duplicate course codes are not allowed' });
         }
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+exports.getStudentStatusCourses = async (req, res) => {
+    try {
+        const { email, semester } = req.query;
+        if (!email || !semester) {
+            return res.status(400).json({ message: 'Email and semester are required' });
+        }
+
+        const studentDetail = await StudentDetail.findOne({ email });
+        if (!studentDetail) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        const courses = await Course.find({
+            department: studentDetail.department,
+            semester: parseInt(semester),
+        }).select('courseCode name creditHours');
+
+        res.status(200).json(courses);
+    } catch (error) {
+        console.error('Student status courses error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.saveStudentStatus = async (req, res) => {
+    try {
+        const { email, paymentStatus } = req.body;
+        if (!email || !paymentStatus) {
+            return res.status(400).json({ message: 'Email and payment status are required' });
+        }
+        if (paymentStatus !== 'done' && paymentStatus !== 'pending') {
+            return res.status(400).json({ message: 'Invalid payment status' });
+        }
+
+        const studentDetail = await StudentDetail.findOne({ email });
+        if (!studentDetail) {
+            return res.status(404).json({ message: 'Student not found' });
+        }
+
+        const existingStatus = await StudentStatus.findOne({ email, semester: studentDetail.semester });
+        if (existingStatus && paymentStatus === 'done') {
+            return res.status(400).json({ message: 'Student status already confirmed for this semester' });
+        }
+
+        const studentStatus = new StudentStatus({
+            email: studentDetail.email,
+            name: studentDetail.fullName,
+            departmentName: studentDetail.departmentName,
+            semester: parseInt(req.body.semester),
+            paymentStatus,
+        });
+        await studentStatus.save();
+
+        res.status(201).json({ message: 'Student status saved successfully' });
+    } catch (error) {
+        console.error('Save student status error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };

@@ -1,5 +1,5 @@
-import { FaHome, FaSignOutAlt, FaHistory, FaFileAlt, FaUserShield, FaChalkboardTeacher, FaList, FaBookOpen, FaCheckSquare, FaPen, FaUsers, FaPlus, FaTrash, FaBuilding, FaClipboardList, FaBell } from 'react-icons/fa';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { FaHome, FaSignOutAlt, FaHistory, FaFileAlt, FaUserShield, FaChalkboardTeacher, FaList, FaBookOpen, FaCheckSquare, FaPen, FaUsers, FaPlus, FaTrash, FaBuilding, FaClipboardList, FaBell, FaClipboardCheck, FaUserGraduate } from 'react-icons/fa';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
     const navigate = useNavigate();
@@ -8,6 +8,7 @@ const Sidebar = () => {
     const userRole = token ? JSON.parse(atob(token.split('.')[1])).role : null;
     const isAdmin = userRole === 'admin';
     const isTeacher = userRole === 'teacher';
+    const isStudent = userRole === 'student';
 
     const handleLogout = () => {
         localStorage.removeItem('token');
@@ -16,6 +17,7 @@ const Sidebar = () => {
 
     const isAdminRoute = location.pathname.startsWith('/admin-panel');
     const isTeacherRoute = location.pathname.startsWith('/teachers/');
+    const isStudentRoute = location.pathname.startsWith('/students/');
 
     return (
         <div className="w-64 h-screen bg-blue-900 text-white flex flex-col">
@@ -23,130 +25,152 @@ const Sidebar = () => {
                 University Portal
             </div>
             <nav className="flex-1">
-                {!isAdminRoute && !isTeacherRoute && (
+                {!isAdminRoute && !isTeacherRoute && !isStudentRoute && (
                     <>
-                        <a
-                            href="/dashboard"
+                        <Link
+                            to="/dashboard"
                             className={`flex items-center p-4 ${location.pathname === '/dashboard' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaHome className="mr-3" /> Dashboard
-                        </a>
-                        <a
-                            href="/attendance-history"
+                        </Link>
+                        <Link
+                            to="/attendance-history"
                             className={`flex items-center p-4 ${location.pathname === '/attendance-history' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaHistory className="mr-3" /> Attendance History
-                        </a>
-                        <a
-                            href="/submit-form"
+                        </Link>
+                        <Link
+                            to="/submit-form"
                             className={`flex items-center p-4 ${location.pathname === '/submit-form' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaFileAlt className="mr-3" /> Submit Form
-                        </a>
+                        </Link>
                     </>
                 )}
                 {isAdmin && isAdminRoute && (
                     <>
-                        <a
-                            href="/admin-panel"
+                        <Link
+                            to="/admin-panel"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaUserShield className="mr-3" /> Admin Dashboard
-                        </a>
-                        <a
-                            href="/admin-panel/user-list"
+                        </Link>
+                        <Link
+                            to="/admin-panel/user-list"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/user-list' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaUsers className="mr-3" /> User List
-                        </a>
-                        <a
-                            href="/admin-panel/add-user"
+                        </Link>
+                        <Link
+                            to="/admin-panel/add-user"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-user' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaPlus className="mr-3" /> Add User
-                        </a>
-                        <a
-                            href="/admin-panel/delete-user"
+                        </Link>
+                        <Link
+                            to="/admin-panel/delete-user"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/delete-user' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaTrash className="mr-3" /> Delete User
-                        </a>
-                        <a
-                            href="/admin-panel/add-department"
+                        </Link>
+                        <Link
+                            to="/admin-panel/add-department"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-department' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaBuilding className="mr-3" /> Add Department
-                        </a>
-                        <a
-                            href="/admin-panel/add-courses"
+                        </Link>
+                        <Link
+                            to="/admin-panel/add-courses"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-courses' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaBookOpen className="mr-3" /> Add Courses
-                        </a>
-                        <a
-                            href="/admin-panel/add-teachers-details"
+                        </Link>
+                        <Link
+                            to="/admin-panel/add-teachers-details"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-teachers-details' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaChalkboardTeacher className="mr-3" /> Add Teachers Details
-                        </a>
-                        <a
-                            href="/admin-panel/add-students-details"
+                        </Link>
+                        <Link
+                            to="/admin-panel/add-students-details"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-students-details' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaUsers className="mr-3" /> Add Student Details
-                        </a>
-                        <a
-                            href="/admin-panel/teacher-status"
+                        </Link>
+                        <Link
+                            to="/admin-panel/teacher-status"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/teacher-status' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
-                            <FaUsers className="mr-3" /> Teacher Status
-                        </a>
-                        <a
-                            href="/admin-panel/add-notice"
+                            <FaClipboardCheck className="mr-3" /> Teacher Status
+                        </Link>
+                        <Link
+                            to="/admin-panel/student-status"
+                            className={`flex items-center p-4 ${location.pathname === '/admin-panel/student-status' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaUserGraduate className="mr-3" /> Student Status
+                        </Link>
+                        <Link
+                            to="/admin-panel/add-notice"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-notice' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaBell className="mr-3" /> Add Notice
-                        </a>
-                        <a
-                            href="/admin-panel/form-fill-up"
+                        </Link>
+                        <Link
+                            to="/admin-panel/form-fill-up"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/form-fill-up' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaClipboardList className="mr-3" /> Form Fill-up
-                        </a>
+                        </Link>
                     </>
                 )}
                 {isTeacher && isTeacherRoute && (
                     <>
-                        <a
-                            href="/teachers/dashboard"
+                        <Link
+                            to="/teachers/dashboard"
                             className={`flex items-center p-4 ${location.pathname === '/teachers/dashboard' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaChalkboardTeacher className="mr-3" /> Teacher Dashboard
-                        </a>
-                        <a
-                            href="/teachers/offered-courses"
+                        </Link>
+                        <Link
+                            to="/teachers/offered-courses"
                             className={`flex items-center p-4 ${location.pathname === '/teachers/offered-courses' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaBookOpen className="mr-3" /> Offered Courses
-                        </a>
-                        <a
-                            href="/teachers/student-list"
+                        </Link>
+                        <Link
+                            to="/teachers/student-list"
                             className={`flex items-center p-4 ${location.pathname === '/teachers/student-list' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaList className="mr-3" /> Student List
-                        </a>
-                        <a
-                            href="/teachers/give-attendance"
+                        </Link>
+                        <Link
+                            to="/teachers/give-attendance"
                             className={`flex items-center p-4 ${location.pathname === '/teachers/give-attendance' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaCheckSquare className="mr-3" /> Give Attendance
-                        </a>
-                        <a
-                            href="/teachers/give-marks"
+                        </Link>
+                        <Link
+                            to="/teachers/give-marks"
                             className={`flex items-center p-4 ${location.pathname === '/teachers/give-marks' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaPen className="mr-3" /> Give Marks
-                        </a>
+                        </Link>
+                    </>
+                )}
+                {isStudent && isStudentRoute && (
+                    <>
+                        <Link
+                            to="/students/dashboard"
+                            className={`flex items-center p-4 ${location.pathname === '/students/dashboard' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaUserGraduate className="mr-3" /> Student Dashboard
+                        </Link>
+                        <Link
+                            to="/students/attendance-history"
+                            className={`flex items-center p-4 ${location.pathname === '/students/attendance-history' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaHistory className="mr-3" /> Attendance History
+                        </Link>
                     </>
                 )}
             </nav>
