@@ -55,41 +55,42 @@ const TeacherStatus = () => {
     }, [department]);
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        const courses = [course1, course2, course3, course4, course5].filter(code => code);
-        if (!department || !teacher || !semester || courses.length === 0) {
-            setError('All fields are required');
-            return;
-        }
-
-        try {
-            const response = await api.post('/teacher-status', {
-                department,
-                teacher,
-                semester,
-                course1,
-                course2,
-                course3,
-                course4,
-                course5,
-            }, {
-                headers: { Authorization: `Bearer ${getAuthToken()}` },
-            });
-            setMessage(response.data.message);
-            setError('');
-            setDepartment('');
-            setTeacher('');
-            setSemester('');
-            setCourse1('');
-            setCourse2('');
-            setCourse3('');
-            setCourse4('');
-            setCourse5('');
-        } catch (err) {
-            setError(err.response?.data?.message || 'Failed to add teacher status');
-            console.error('Teacher status error:', err);
-        }
-    };
+    e.preventDefault();
+    const courses = [course1, course2, course3, course4, course5].filter(code => code);
+    if (!department || !teacher || !semester || courses.length === 0) {
+        setError('All fields are required');
+        return;
+    }
+    console.log('Submitting department:', department); // Debug log
+    console.log('Submitting teacher:', teacher); // Debug log
+    try {
+        const response = await api.post('/teacher-status', {
+            department,
+            teacher,
+            semester,
+            course1,
+            course2,
+            course3,
+            course4,
+            course5,
+        }, {
+            headers: { Authorization: `Bearer ${getAuthToken()}` },
+        });
+        setMessage(response.data.message);
+        setError('');
+        setDepartment('');
+        setTeacher('');
+        setSemester('');
+        setCourse1('');
+        setCourse2('');
+        setCourse3('');
+        setCourse4('');
+        setCourse5('');
+    } catch (err) {
+        setError(err.response?.data?.message || 'Failed to add teacher status');
+        console.error('Teacher status error:', err);
+    }
+};
 
     return (
         <div className="flex h-screen bg-gray-100">

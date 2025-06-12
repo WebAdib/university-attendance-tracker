@@ -139,7 +139,6 @@ exports.addNotice = async (req, res) => {
 exports.setFormFillUp = async (req, res) => {
     try {
         const { startDate, endDate } = req.body;
-        // Placeholder: Store form details (e.g., in a Form model or config)
         res.status(200).json({ message: 'Form fill-up dates set successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
@@ -148,8 +147,8 @@ exports.setFormFillUp = async (req, res) => {
 
 exports.getFormSubmissions = async (req, res) => {
     try {
-        // Placeholder: Fetch form submissions
-        const submissions = await api.get('/students/submit-form/status'); // Adjust based on actual endpoint
+        
+        const submissions = await api.get('/students/submit-form/status'); 
         res.status(200).json(submissions.data);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
@@ -177,7 +176,7 @@ exports.addTeacherDetails = async (req, res) => {
             phoneNumber,
             address,
             department: selectedDept._id,
-            departmentName: selectedDept.name, // Set department name
+            departmentName: selectedDept.name, 
             designation,
             user: user._id,
         });
@@ -220,17 +219,38 @@ exports.addStudentDetails = async (req, res) => {
     }
 };
 
+exports.getTeachersByDepartment = async (req, res) => {
+    try {
+        const { department } = req.query;
+        const teachers = await TeacherDetail.find({ department }).select('fullName _id email department');
+        console.log('Teachers found:', teachers); // Debug log
+        if (!teachers.length) {
+            return res.status(404).json({ message: 'No teachers found for this department' });
+        }
+        res.status(200).json(teachers);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 exports.addTeacherStatus = async (req, res) => {
     try {
         const { department, teacher, semester, course1, course2, course3, course4, course5 } = req.body;
+        console.log('Request body:', { department, teacher, semester, course1, course2, course3, course4, course5 }); // Log all inputs
+
         const selectedDept = await Department.findById(department);
         if (!selectedDept) {
             return res.status(400).json({ message: 'Invalid department' });
         }
-        const teacherDetail = await TeacherDetail.findById(teacher);
-        if (!teacherDetail || teacherDetail.department.toString() !== department) {
-            return res.status(400).json({ message: 'Invalid teacher or department mismatch' });
+
+        const teacherDetail = await TeacherDetail.findById(teacher).select('fullName email department');
+        console.log('Teacher detail found:', teacherDetail); // Log the retrieved teacher detail
+        if (!teacherDetail) {
+            return res.status(400).json({ message: 'Invalid teacher ID' });
         }
+        if (!teacherDetail.department || teacherDetail.department.toString() !== department) {
+            return res.status(400).json({ message: 'Department mismatch or invalid teacher department' });
+        }
+
         const courses = [course1, course2, course3, course4, course5].filter(code => code);
         for (const code of courses) {
             const course = await Course.findOne({ courseCode: code });
@@ -238,11 +258,19 @@ exports.addTeacherStatus = async (req, res) => {
                 return res.status(400).json({ message: `Invalid course code: ${code}` });
             }
         }
+
+        // Check for existing teacher status for the same semester
+        const existingStatus = await TeacherStatus.findOne({ teacher, semester });
+        if (existingStatus) {
+            return res.status(400).json({ message: 'Teacher already has a status for this semester' });
+        }
+
         const teacherStatus = new TeacherStatus({
             department: selectedDept._id,
             departmentName: selectedDept.name,
             teacher: teacherDetail._id,
             teacherName: teacherDetail.fullName,
+            teacherEmail: teacherDetail.email || '',
             semester,
             course1,
             course2,
@@ -254,16 +282,11 @@ exports.addTeacherStatus = async (req, res) => {
         res.status(201).json({ message: 'Teacher status added successfully' });
     } catch (error) {
         console.error('Teacher status error:', error);
-        res.status(500).json({ message: 'Server error' });
-    }
-};
-
-exports.getTeachersByDepartment = async (req, res) => {
-    try {
-        const { department } = req.query;
-        const teachers = await TeacherDetail.find({ department }).select('fullName _id');
-        res.status(200).json(teachers);
-    } catch (error) {
+        if (error.code === 11000) {
+            return res.status(400).json({ message: 'Teacher already has a status for this semester' });
+        } else if (error.message.includes('Duplicate course codes are not allowed')) {
+            return res.status(400).json({ message: 'Duplicate course codes are not allowed' });
+        }
         res.status(500).json({ message: 'Server error' });
     }
 };
