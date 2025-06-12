@@ -18,6 +18,7 @@ import AddNotice from './pages/AddNotice';
 import FormFillUp from './pages/FormFillUp';
 import AddTeacherDetails from './pages/AddTeacherDetails';
 import AddStudentDetails from './pages/AddStudentDetails';
+import TeacherStatus from './pages/TeacherStatus';
 
 function App() {
     return (
@@ -42,6 +43,7 @@ function App() {
                 <Route path="/teachers/give-marks" element={<GiveMarks />} />
                 <Route path="/admin-panel/add-teachers-details" element={<AddTeacherDetails />} />
                 <Route path="/admin-panel/add-students-details" element={<AddStudentDetails />} />
+                <Route path="/admin-panel/teacher-status" element={<TeacherStatus />} />
             </Routes>
         </Router>
     );

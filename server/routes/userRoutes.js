@@ -30,7 +30,8 @@ router.post('/teachers/upload-marks', authMiddleware, restrictTo('teacher'), tea
 router.get('/teachers/students', authMiddleware, restrictTo('teacher'), teacherController.getStudentsBySubject);
 router.post('/teachers/details', authMiddleware, restrictTo('admin'), adminController.addTeacherDetails); 
 router.post('/students/details', authMiddleware, restrictTo('admin'), adminController.addStudentDetails); 
-
+router.post('/teacher-status', authMiddleware, restrictTo('admin'), adminController.addTeacherStatus);
+router.get('/teachers/details', authMiddleware, restrictTo('admin'), adminController.getTeachersByDepartment);
 
 
 module.exports = router;

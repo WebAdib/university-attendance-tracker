@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../utils/auth';
 import Sidebar from '../components/Sidebar';
-import { FaUsers, FaPlus, FaTrash, FaBuilding, FaBookOpen, FaBell, FaClipboardList, FaChalkboardTeacher } from 'react-icons/fa';
+import { FaUsers, FaPlus, FaTrash, FaBuilding, FaBookOpen, FaBell, FaClipboardList, FaChalkboardTeacher, FaClipboardCheck } from 'react-icons/fa';
 
 const AdminPanel = () => {
     const navigate = useNavigate();
@@ -94,6 +94,16 @@ const AdminPanel = () => {
                         <div>
                             <h2 className="text-xl font-semibold text-gray-800">Add Student Details</h2>
                             <p className="text-gray-600">Manage student information</p>
+                        </div>
+                    </a>
+                    <a
+                        href="/admin-panel/teacher-status"
+                        className="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4 transform transition-all duration-300 hover:shadow-lg hover:bg-blue-50"
+                    >
+                        <FaClipboardCheck className="text-4xl text-teal-600" />
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-800">Teacher Status</h2>
+                            <p className="text-gray-600">Assign courses to teachers</p>
                         </div>
                     </a>
                     <a

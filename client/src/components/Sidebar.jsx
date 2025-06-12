@@ -96,6 +96,12 @@ const Sidebar = () => {
                             <FaUsers className="mr-3" /> Add Student Details
                         </a>
                         <a
+                            href="/admin-panel/teacher-status"
+                            className={`flex items-center p-4 ${location.pathname === '/admin-panel/teacher-status' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaUsers className="mr-3" /> Teacher Status
+                        </a>
+                        <a
                             href="/admin-panel/add-notice"
                             className={`flex items-center p-4 ${location.pathname === '/admin-panel/add-notice' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >

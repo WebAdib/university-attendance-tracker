@@ -4,6 +4,7 @@ const Course = require('../models/Course');
 const Notice = require('../models/Notice');
 const TeacherDetail = require('../models/TeacherDetails');
 const StudentDetail = require('../models/StudentDetails');
+const TeacherStatus = require('../models/TeacherStatus');
 const multer = require('multer');
 const fs = require('fs').promises;
 const csv = require('csv-parser');
@@ -214,6 +215,54 @@ exports.addStudentDetails = async (req, res) => {
         });
         await studentDetail.save();
         res.status(201).json({ message: 'Student details added successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.addTeacherStatus = async (req, res) => {
+    try {
+        const { department, teacher, semester, course1, course2, course3, course4, course5 } = req.body;
+        const selectedDept = await Department.findById(department);
+        if (!selectedDept) {
+            return res.status(400).json({ message: 'Invalid department' });
+        }
+        const teacherDetail = await TeacherDetail.findById(teacher);
+        if (!teacherDetail || teacherDetail.department.toString() !== department) {
+            return res.status(400).json({ message: 'Invalid teacher or department mismatch' });
+        }
+        const courses = [course1, course2, course3, course4, course5].filter(code => code);
+        for (const code of courses) {
+            const course = await Course.findOne({ courseCode: code });
+            if (!course) {
+                return res.status(400).json({ message: `Invalid course code: ${code}` });
+            }
+        }
+        const teacherStatus = new TeacherStatus({
+            department: selectedDept._id,
+            departmentName: selectedDept.name,
+            teacher: teacherDetail._id,
+            teacherName: teacherDetail.fullName,
+            semester,
+            course1,
+            course2,
+            course3,
+            course4,
+            course5,
+        });
+        await teacherStatus.save();
+        res.status(201).json({ message: 'Teacher status added successfully' });
+    } catch (error) {
+        console.error('Teacher status error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getTeachersByDepartment = async (req, res) => {
+    try {
+        const { department } = req.query;
+        const teachers = await TeacherDetail.find({ department }).select('fullName _id');
+        res.status(200).json(teachers);
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
