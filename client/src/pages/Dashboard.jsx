@@ -30,9 +30,10 @@ const Dashboard = () => {
             const response = await api.get('/students/dashboard', {
                 headers: { Authorization: `Bearer ${token}` },
             });
-            setData(response.data);
+            setData(response.data || { attendancePercentage: 0, incourseMarks: 0, eligibleForForm: false });
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to fetch dashboard data');
+            setData({ attendancePercentage: 0, incourseMarks: 0, eligibleForForm: false }); // Default values on error
         } finally {
             setLoading(false);
         }
@@ -95,4 +96,5 @@ const Dashboard = () => {
         </div>
     );
 };
+
 export default Dashboard;
