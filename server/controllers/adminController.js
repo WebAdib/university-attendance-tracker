@@ -381,3 +381,19 @@ exports.getDepartmentById = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
+
+
+exports.getCourses = async (req, res) => {
+    try {
+        const { courseCode } = req.query;
+        if (!courseCode) {
+            return res.status(400).json({ message: 'Course code is required' });
+        }
+        const courses = await Course.find({ courseCode }).select('semester departmentName');
+        res.status(200).json(courses);
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};

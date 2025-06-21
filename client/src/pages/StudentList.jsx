@@ -56,13 +56,13 @@ const StudentList = () => {
 
     const handleYearChange = (e) => {
         setSelectedYear(e.target.value);
-        setActiveCourse(null); // Reset active course when year changes
+        setActiveCourse(null);
         setStudentsByCourse({});
     };
 
     const handleSemesterChange = (e) => {
         setSelectedSemester(e.target.value);
-        setActiveCourse(null); // Reset active course when semester changes
+        setActiveCourse(null);
         setStudentsByCourse({});
     };
 
@@ -81,28 +81,53 @@ const StudentList = () => {
                 return;
             }
 
-            // Fetch students for each matching course
-            const studentsData = {};
+            const courseCodes = [];
             for (const course of matchingCourses) {
-                const courses = [course.course1, course.course2, course.course3, course.course4, course.course5].filter(c => c);
-                for (const courseCode of courses) {
-                    const response = await api.get('/teachers/students', {
-                        headers: { Authorization: `Bearer ${getAuthToken()}` },
-                        params: { subject: courseCode },
-                    });
-                    studentsData[courseCode] = response.data.students || [];
-                }
+                const codes = [course.course1, course.course2, course.course3, course.course4, course.course5].filter(c => c);
+                courseCodes.push(...codes);
             }
-            setStudentsByCourse(studentsData);
+            setStudentsByCourse({ ...courseCodes.reduce((acc, code) => ({ ...acc, [code]: [] }), {}) });
+            setError('');
+        } catch (err) {
+            setError('Failed to fetch data: ' + (err.response?.data?.message || err.message));
+            console.error('Data fetch error:', err.response?.data || err);
+        }
+    };
+
+    const handleCourseClick = async (courseCode) => {
+        if (activeCourse === courseCode) {
+            setActiveCourse(null);
+            return;
+        }
+        setActiveCourse(courseCode);
+        try {
+            // Match courseCode with Course database
+            const courseResponse = await api.get('/courses', {
+                params: { courseCode },
+                headers: { Authorization: `Bearer ${getAuthToken()}` },
+            });
+            const course = courseResponse.data[0]; // Assuming it returns an array
+            if (!course) {
+                setError(`Course ${courseCode} not found`);
+                setStudentsByCourse(prev => ({ ...prev, [courseCode]: [] }));
+                return;
+            }
+
+            // Fetch students from StudentStatus based on semester and departmentName
+            const studentsResponse = await api.get('/teachers/students-by-semester-dept', {
+                params: { 
+                    semester: course.semester,
+                    departmentName: course.departmentName
+                },
+                headers: { Authorization: `Bearer ${getAuthToken()}` },
+            });
+            setStudentsByCourse(prev => ({ ...prev, [courseCode]: studentsResponse.data || [] }));
             setError('');
         } catch (err) {
             setError('Failed to fetch students: ' + (err.response?.data?.message || err.message));
             console.error('Students fetch error:', err.response?.data || err);
+            setStudentsByCourse(prev => ({ ...prev, [courseCode]: [] }));
         }
-    };
-
-    const handleCourseClick = (courseCode) => {
-        setActiveCourse(courseCode === activeCourse ? null : courseCode);
     };
 
     if (loading) return <div className="text-center p-4">Loading...</div>;
@@ -162,8 +187,8 @@ const StudentList = () => {
                             {activeCourse && studentsByCourse[activeCourse] && studentsByCourse[activeCourse].length > 0 ? (
                                 <ul className="space-y-2">
                                     {studentsByCourse[activeCourse].map((student) => (
-                                        <li key={student._id} className="border-b pb-2">
-                                            <span className="font-semibold">{student.name}</span>
+                                        <li key={student._id || student.email} className="border-b pb-2">
+                                            <span className="font-semibold">{student.name || student.fullName}</span>
                                             <span className="ml-4 text-gray-600">{student.email}</span>
                                         </li>
                                     ))}
