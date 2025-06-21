@@ -12,6 +12,7 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post('/users', authMiddleware, restrictTo('admin'), userController.createUser);
 router.get('/users', authMiddleware, restrictTo('admin'), adminController.getUsers);
+router.get('/users/:id', authMiddleware, restrictTo('admin', 'teacher'), userController.getUserById);
 router.delete('/users', authMiddleware, restrictTo('admin'), adminController.deleteUser);
 router.post('/users/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), userController.bulkUploadUsers);
 router.post('/auth/login', authController.login);
@@ -31,8 +32,8 @@ router.get('/teachers/students', authMiddleware, restrictTo('teacher'), teacherC
 router.post('/teachers/details', authMiddleware, restrictTo('admin'), adminController.addTeacherDetails); 
 router.post('/students/details', authMiddleware, restrictTo('admin'), adminController.addStudentDetails); 
 router.post('/teacher-status', authMiddleware, restrictTo('admin'), adminController.addTeacherStatus);
-router.get('/teachers/details', authMiddleware, restrictTo('admin'), adminController.getTeachersByDepartment);
-router.get('/teachers/detail', authMiddleware, restrictTo('admin'), adminController.getTeacherDetails);
+router.get('/teachers/details', authMiddleware, restrictTo('teacher','admin'), adminController.getTeachersByDepartment);
+router.get('/teachers/detail', authMiddleware, restrictTo('teacher','admin'), adminController.getTeacherDetails);
 router.get('/students/status/courses', authMiddleware, restrictTo('admin'), adminController.getStudentStatusCourses);
 router.post('/students/status', authMiddleware, restrictTo('admin'), adminController.saveStudentStatus);
 

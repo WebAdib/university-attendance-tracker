@@ -94,6 +94,17 @@ exports.deleteUser = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+exports.getUserById = async (req, res) => {
+    try {
+        const user = await User.findById(req.params.id).select('email');
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json({ email: user.email });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
 
 exports.login = async (req, res) => {
     const { email, password } = req.body;
