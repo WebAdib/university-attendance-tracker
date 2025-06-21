@@ -6,6 +6,7 @@ const teacherStatusSchema = new mongoose.Schema({
     teacher: { type: mongoose.Schema.Types.ObjectId, ref: 'TeacherDetail', required: true },
     teacherName: { type: String, required: true },
     teacherEmail: { type: String, required: true },
+    year: { type: Number, required: true },
     semester: { type: String, enum: ['First Half', 'Second Half'], required: true },
     course1: { type: String },
     course2: { type: String },
@@ -15,11 +16,11 @@ const teacherStatusSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
 });
 
-// Unique constraint for teacher and semester combination
-teacherStatusSchema.index({ teacher: 1, semester: 1 }, { unique: true });
+// Unique constraint for teacher, semester, and year
+teacherStatusSchema.index({ teacher: 1, semester: 1, year: 1 }, { unique: true });
 
 // Custom validator to prevent duplicate course codes
-teacherStatusSchema.pre('save', function(next) {
+teacherStatusSchema.pre('save', function (next) {
     const courses = [this.course1, this.course2, this.course3, this.course4, this.course5].filter(code => code);
     const uniqueCourses = new Set(courses);
     if (courses.length !== uniqueCourses.size) {

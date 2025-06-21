@@ -8,6 +8,7 @@ const TeacherStatus = () => {
     const [department, setDepartment] = useState('');
     const [teachers, setTeachers] = useState([]);
     const [teacher, setTeacher] = useState('');
+    const [year, setYear] = useState('');
     const [semester, setSemester] = useState('');
     const [course1, setCourse1] = useState('');
     const [course2, setCourse2] = useState('');
@@ -55,42 +56,43 @@ const TeacherStatus = () => {
     }, [department]);
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    const courses = [course1, course2, course3, course4, course5].filter(code => code);
-    if (!department || !teacher || !semester || courses.length === 0) {
-        setError('All fields are required');
-        return;
-    }
-    console.log('Submitting department:', department); // Debug log
-    console.log('Submitting teacher:', teacher); // Debug log
-    try {
-        const response = await api.post('/teacher-status', {
-            department,
-            teacher,
-            semester,
-            course1,
-            course2,
-            course3,
-            course4,
-            course5,
-        }, {
-            headers: { Authorization: `Bearer ${getAuthToken()}` },
-        });
-        setMessage(response.data.message);
-        setError('');
-        setDepartment('');
-        setTeacher('');
-        setSemester('');
-        setCourse1('');
-        setCourse2('');
-        setCourse3('');
-        setCourse4('');
-        setCourse5('');
-    } catch (err) {
-        setError(err.response?.data?.message || 'Failed to add teacher status');
-        console.error('Teacher status error:', err);
-    }
-};
+        e.preventDefault();
+        const courses = [course1, course2, course3, course4, course5].filter(code => code);
+        if (!department || !teacher || !semester || !year || courses.length === 0) {
+            setError('All fields are required');
+            return;
+        }
+
+        try {
+            const response = await api.post('/teacher-status', {
+                department,
+                teacher,
+                semester,
+                year,
+                course1,
+                course2,
+                course3,
+                course4,
+                course5,
+            }, {
+                headers: { Authorization: `Bearer ${getAuthToken()}` },
+            });
+            setMessage(response.data.message);
+            setError('');
+            setDepartment('');
+            setTeacher('');
+            setYear('');
+            setSemester('');
+            setCourse1('');
+            setCourse2('');
+            setCourse3('');
+            setCourse4('');
+            setCourse5('');
+        } catch (err) {
+            setError(err.response?.data?.message || 'Failed to add teacher status');
+            console.error('Teacher status error:', err);
+        }
+    };
 
     return (
         <div className="flex h-screen bg-gray-100">
@@ -130,6 +132,17 @@ const TeacherStatus = () => {
                             </select>
                         </div>
                         <div>
+                            <label className="block text-gray-700 font-semibold mb-1">Year</label>
+                            <input
+                                type="number"
+                                value={year}
+                                onChange={(e) => setYear(e.target.value)}
+                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                placeholder="Enter year (e.g., 2025)"
+                                required
+                            />
+                        </div>
+                        <div>
                             <label className="block text-gray-700 font-semibold mb-1">Semester</label>
                             <select
                                 value={semester}
@@ -142,56 +155,18 @@ const TeacherStatus = () => {
                                 <option value="Second Half">Second Half</option>
                             </select>
                         </div>
-                        <div>
-                            <label className="block text-gray-700 font-semibold mb-1">Course 1</label>
-                            <input
-                                type="text"
-                                value={course1}
-                                onChange={(e) => setCourse1(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter course code (e.g., CS101)"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700 font-semibold mb-1">Course 2</label>
-                            <input
-                                type="text"
-                                value={course2}
-                                onChange={(e) => setCourse2(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter course code (e.g., CS102)"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700 font-semibold mb-1">Course 3</label>
-                            <input
-                                type="text"
-                                value={course3}
-                                onChange={(e) => setCourse3(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter course code (e.g., CS103)"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700 font-semibold mb-1">Course 4</label>
-                            <input
-                                type="text"
-                                value={course4}
-                                onChange={(e) => setCourse4(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter course code (e.g., CS104)"
-                            />
-                        </div>
-                        <div>
-                            <label className="block text-gray-700 font-semibold mb-1">Course 5</label>
-                            <input
-                                type="text"
-                                value={course5}
-                                onChange={(e) => setCourse5(e.target.value)}
-                                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Enter course code (e.g., CS105)"
-                            />
-                        </div>
+                        {[course1, course2, course3, course4, course5].map((course, idx) => (
+                            <div key={idx}>
+                                <label className="block text-gray-700 font-semibold mb-1">{`Course ${idx + 1}`}</label>
+                                <input
+                                    type="text"
+                                    value={eval(`course${idx + 1}`)}
+                                    onChange={(e) => eval(`setCourse${idx + 1}`)(e.target.value)}
+                                    className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    placeholder={`Enter course code (e.g., CS10${idx + 1})`}
+                                />
+                            </div>
+                        ))}
                         <button
                             type="submit"
                             className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-300"

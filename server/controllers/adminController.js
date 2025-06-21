@@ -253,8 +253,8 @@ exports.getTeacherDetails = async (req, res) => {
 };
 exports.addTeacherStatus = async (req, res) => {
     try {
-        const { department, teacher, semester, course1, course2, course3, course4, course5 } = req.body;
-        console.log('Request body:', { department, teacher, semester, course1, course2, course3, course4, course5 }); // Log all inputs
+        const { department, teacher, semester, year, course1, course2, course3, course4, course5 } = req.body;
+        console.log('Request body:', { department, teacher, semester, year, course1, course2, course3, course4, course5 });
 
         const selectedDept = await Department.findById(department);
         if (!selectedDept) {
@@ -262,12 +262,16 @@ exports.addTeacherStatus = async (req, res) => {
         }
 
         const teacherDetail = await TeacherDetail.findById(teacher).select('fullName email department');
-        console.log('Teacher detail found:', teacherDetail); // Log the retrieved teacher detail
+        console.log('Teacher detail found:', teacherDetail);
         if (!teacherDetail) {
             return res.status(400).json({ message: 'Invalid teacher ID' });
         }
         if (!teacherDetail.department || teacherDetail.department.toString() !== department) {
             return res.status(400).json({ message: 'Department mismatch or invalid teacher department' });
+        }
+
+        if (!year || isNaN(year) || year < 2000 || year > 2100) {
+            return res.status(400).json({ message: 'Invalid year' });
         }
 
         const courses = [course1, course2, course3, course4, course5].filter(code => code);
@@ -278,10 +282,9 @@ exports.addTeacherStatus = async (req, res) => {
             }
         }
 
-        // Check for existing teacher status for the same semester
-        const existingStatus = await TeacherStatus.findOne({ teacher, semester });
+        const existingStatus = await TeacherStatus.findOne({ teacher, semester, year });
         if (existingStatus) {
-            return res.status(400).json({ message: 'Teacher already has a status for this semester' });
+            return res.status(400).json({ message: 'Teacher already has a status for this semester and year' });
         }
 
         const teacherStatus = new TeacherStatus({
@@ -291,6 +294,7 @@ exports.addTeacherStatus = async (req, res) => {
             teacherName: teacherDetail.fullName,
             teacherEmail: teacherDetail.email || '',
             semester,
+            year,
             course1,
             course2,
             course3,
@@ -302,13 +306,14 @@ exports.addTeacherStatus = async (req, res) => {
     } catch (error) {
         console.error('Teacher status error:', error);
         if (error.code === 11000) {
-            return res.status(400).json({ message: 'Teacher already has a status for this semester' });
+            return res.status(400).json({ message: 'Teacher already has a status for this semester and year' });
         } else if (error.message.includes('Duplicate course codes are not allowed')) {
             return res.status(400).json({ message: 'Duplicate course codes are not allowed' });
         }
         res.status(500).json({ message: 'Server error' });
     }
 };
+
 exports.getStudentStatusCourses = async (req, res) => {
     try {
         const { email, semester } = req.query;
