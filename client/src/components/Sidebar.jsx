@@ -1,4 +1,4 @@
-import { FaHome, FaSignOutAlt, FaHistory, FaFileAlt, FaUserShield, FaChalkboardTeacher, FaList, FaBookOpen, FaCheckSquare, FaPen, FaUsers, FaPlus, FaTrash, FaBuilding, FaClipboardList, FaBell, FaClipboardCheck, FaUserGraduate } from 'react-icons/fa';
+import { FaHome, FaSignOutAlt, FaHistory, FaFileAlt, FaUserShield, FaChalkboardTeacher, FaList, FaBookOpen, FaCheckSquare, FaPen, FaUsers, FaPlus, FaTrash, FaBuilding, FaClipboardList, FaBell, FaClipboardCheck, FaUserGraduate, FaUser } from 'react-icons/fa';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Sidebar = () => {
@@ -154,6 +154,12 @@ const Sidebar = () => {
                             className={`flex items-center p-4 ${location.pathname === '/teachers/give-marks' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
                         >
                             <FaPen className="mr-3" /> Give Marks
+                        </Link>
+                        <Link
+                            to="/teachers/my-details"
+                            className={`flex items-center p-4 ${location.pathname === '/teachers/my-details' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                        >
+                            <FaUser className="mr-3" /> My Details
                         </Link>
                     </>
                 )}

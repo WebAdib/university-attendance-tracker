@@ -20,6 +20,7 @@ import AddTeacherDetails from './pages/AddTeacherDetails';
 import AddStudentDetails from './pages/AddStudentDetails';
 import TeacherStatus from './pages/TeacherStatus';
 import StudentStatus from './pages/StudentStatus';
+import MyDetails from './pages/MyDetails';
 
 function App() {
     return (
@@ -46,6 +47,7 @@ function App() {
                 <Route path="/admin-panel/add-students-details" element={<AddStudentDetails />} />
                 <Route path="/admin-panel/teacher-status" element={<TeacherStatus />} />
                 <Route path="/admin-panel/student-status" element={<StudentStatus />} />
+                <Route path="/teachers/my-details" element={<MyDetails />} />
                 
             </Routes>
         </Router>

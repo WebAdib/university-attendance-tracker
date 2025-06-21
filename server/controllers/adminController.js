@@ -241,11 +241,7 @@ exports.getTeacherDetails = async (req, res) => {
         if (!email) {
             return res.status(400).json({ message: 'Email is required' });
         }
-        const teacherDetail = await TeacherDetail.findOne({ email }).select('fullName email phoneNumber address department designation');
-        if (teacherDetail && teacherDetail.department) {
-            const department = await Department.findById(teacherDetail.department).select('name');
-            teacherDetail.department = department ? { name: department.name } : null;
-        }
+        const teacherDetail = await TeacherDetail.findOne({ email }).select('fullName email phoneNumber address departmentName designation');
         res.status(200).json(teacherDetail || {});
     } catch (error) {
         res.status(500).json({ message: 'Server error' });

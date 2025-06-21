@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../utils/auth';
 import Sidebar from '../components/Sidebar';
-import { FaBookOpen, FaList, FaCheckSquare, FaPen } from 'react-icons/fa';
+import { FaBookOpen, FaList, FaCheckSquare, FaPen, FaUser } from 'react-icons/fa';
 
 const TeacherDashboard = () => {
     const navigate = useNavigate();
@@ -32,7 +32,7 @@ const TeacherDashboard = () => {
                     >
                         <FaBookOpen className="text-4xl text-blue-600" />
                         <div>
-                            <h2 className="text-xl font-semibold text-gray-800">Offered Courses</h2>
+                            <h2 className="text-xl font-semibold text-gray-800">View your courses</h2>
                             <p className="text-gray-600">View your courses</p>
                         </div>
                     </a>
@@ -42,7 +42,7 @@ const TeacherDashboard = () => {
                     >
                         <FaList className="text-4xl text-green-600" />
                         <div>
-                            <h2 className="text-xl font-semibold text-gray-800">Student List</h2>
+                            <h2 className="text-xl font-semibold text-gray-800">View enrolled students</h2>
                             <p className="text-gray-600">View enrolled students</p>
                         </div>
                     </a>
@@ -64,6 +64,16 @@ const TeacherDashboard = () => {
                         <div>
                             <h2 className="text-xl font-semibold text-gray-800">Give Marks</h2>
                             <p className="text-gray-600">Upload marks</p>
+                        </div>
+                    </a>
+                    <a
+                        href="/teachers/my-details"
+                        className="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4 transform transition-all duration-300 hover:shadow-lg hover:bg-blue-50"
+                    >
+                        <FaUser className="text-4xl text-teal-600" />
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-800">My Details</h2>
+                            <p className="text-gray-600">View your personal details</p>
                         </div>
                     </a>
                 </div>
