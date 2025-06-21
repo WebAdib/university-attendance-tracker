@@ -32,6 +32,7 @@ router.get('/teachers/students', authMiddleware, restrictTo('teacher'), teacherC
 router.post('/teachers/details', authMiddleware, restrictTo('admin'), adminController.addTeacherDetails); 
 router.post('/students/details', authMiddleware, restrictTo('admin'), adminController.addStudentDetails); 
 router.post('/teacher-status', authMiddleware, restrictTo('admin'), adminController.addTeacherStatus);
+router.get('/teachers/status', authMiddleware, restrictTo('teacher', 'admin'), teacherController.getTeacherStatus);
 router.get('/teachers/details', authMiddleware, restrictTo('teacher','admin'), adminController.getTeachersByDepartment);
 router.get('/teachers/detail', authMiddleware, restrictTo('teacher','admin'), adminController.getTeacherDetails);
 router.get('/students/status/courses', authMiddleware, restrictTo('admin'), adminController.getStudentStatusCourses);

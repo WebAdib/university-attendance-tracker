@@ -1,4 +1,5 @@
 const StudentData = require('../models/StudentData');
+const TeacherStatus = require('../models/TeacherStatus');
 const User = require('../models/User');
 const csv = require('csv-parser');
 const fs = require('fs');
@@ -89,6 +90,23 @@ exports.getStudentsBySubject = async (req, res) => {
         res.status(200).json({ students });
     } catch (error) {
         console.error('Get students error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getTeacherStatus = async (req, res) => {
+    try {
+        const { teacherEmail } = req.query;
+        if (!teacherEmail) {
+            return res.status(400).json({ message: 'Teacher email is required' });
+        }
+        const statuses = await TeacherStatus.find({ teacherEmail })
+            .select('year semester course1 course2 course3 course4 course5');
+        if (!statuses.length) {
+            return res.status(404).json({ message: 'No status found for this teacher' });
+        }
+        res.status(200).json(statuses);
+    } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 };

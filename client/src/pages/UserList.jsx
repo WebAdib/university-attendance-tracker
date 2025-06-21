@@ -15,6 +15,7 @@ const UserList = () => {
     const [selectedDepartment, setSelectedDepartment] = useState('');
     const [selectedTeacherEmail, setSelectedTeacherEmail] = useState(null);
     const [teacherDetails, setTeacherDetails] = useState({});
+    const [teacherCourses, setTeacherCourses] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
     const navigate = useNavigate();
@@ -76,15 +77,72 @@ const UserList = () => {
 
     const fetchTeacherDetails = async (email) => {
         try {
+            const token = getAuthToken();
+            if (!token) throw new Error('No authentication token');
+
+            const decoded = JSON.parse(atob(token.split('.')[1]));
+            console.log('Decoded Token Payload:', decoded);
+            const userId = decoded._id;
+            if (!userId) {
+                throw new Error('User ID not found in token');
+            }
+            console.log('User ID:', userId);
+
+            const userResponse = await api.get('/users/' + userId, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const fetchedEmail = userResponse.data.email;
+            console.log('Fetched Email:', fetchedEmail);
+            if (fetchedEmail !== email) {
+                console.warn('Email mismatch:', { fetchedEmail, passedEmail: email });
+            }
+
             const response = await api.get('/teachers/detail', {
                 params: { email },
-                headers: { Authorization: `Bearer ${getAuthToken()}` },
+                headers: { Authorization: `Bearer ${token}` },
             });
+            console.log('Teacher Details Response:', response.data);
             setTeacherDetails(response.data || {});
             setSelectedTeacherEmail(email);
+            setTeacherCourses([]);
         } catch (err) {
-            setError('Failed to fetch teacher details');
-            console.error('Teacher details fetch error:', err);
+            setError('Failed to fetch teacher details: ' + (err.response?.data?.message || err.message));
+            console.error('Teacher details fetch error:', err.response?.data || err);
+        }
+    };
+
+    const fetchTeacherCourses = async (email) => {
+        try {
+            const token = getAuthToken();
+            if (!token) throw new Error('No authentication token');
+
+            const decoded = JSON.parse(atob(token.split('.')[1]));
+            console.log('Decoded Token Payload:', decoded);
+            const userId = decoded._id;
+            if (!userId) {
+                throw new Error('User ID not found in token');
+            }
+            console.log('User ID:', userId);
+
+            const userResponse = await api.get('/users/' + userId, {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            const fetchedEmail = userResponse.data.email;
+            console.log('Fetched Email:', fetchedEmail);
+            if (fetchedEmail !== email) {
+                console.warn('Email mismatch:', { fetchedEmail, passedEmail: email });
+            }
+
+            const response = await api.get('/teachers/status', {
+                params: { teacherEmail: email },
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            console.log('Teacher Courses Response:', response.data);
+            setTeacherCourses(response.data || []);
+            setError('');
+        } catch (err) {
+            setError('Failed to fetch teacher courses: ' + (err.response?.data?.message || err.message));
+            console.error('Teacher courses fetch error:', err.response?.data || err);
         }
     };
 
@@ -104,6 +162,7 @@ const UserList = () => {
                                 setSelectedDepartment('');
                                 setTeacherDetails({});
                                 setSelectedTeacherEmail(null);
+                                setTeacherCourses([]);
                             }}
                             className={`flex items-center p-2 rounded-t-lg ${activeTab === 'admin' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-500 hover:text-white transition-all duration-300`}
                         >
@@ -115,6 +174,7 @@ const UserList = () => {
                                 setSelectedDepartment('');
                                 setTeacherDetails({});
                                 setSelectedTeacherEmail(null);
+                                setTeacherCourses([]);
                                 fetchTeachersByDepartment();
                             }}
                             className={`flex items-center p-2 rounded-t-lg ${activeTab === 'teacher' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-500 hover:text-white transition-all duration-300`}
@@ -127,6 +187,7 @@ const UserList = () => {
                                 setSelectedDepartment('');
                                 setTeacherDetails({});
                                 setSelectedTeacherEmail(null);
+                                setTeacherCourses([]);
                             }}
                             className={`flex items-center p-2 rounded-t-lg ${activeTab === 'student' ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'} hover:bg-blue-500 hover:text-white transition-all duration-300`}
                         >
@@ -169,12 +230,20 @@ const UserList = () => {
                                                 <p><strong>Name:</strong> {teacher.fullName || 'Unknown'}</p>
                                                 <p><strong>Email:</strong> {teacher.email}</p>
                                             </div>
-                                            <button
-                                                onClick={() => fetchTeacherDetails(teacher.email)}
-                                                className="mt-2 sm:mt-0 bg-blue-600 text-white p-1 rounded-lg hover:bg-blue-700 transition-all duration-300"
-                                            >
-                                                More Details
-                                            </button>
+                                            <div className="flex space-x-2 mt-2 sm:mt-0">
+                                                <button
+                                                    onClick={() => fetchTeacherDetails(teacher.email)}
+                                                    className="bg-blue-600 text-white p-1 rounded-lg hover:bg-blue-700 transition-all duration-300"
+                                                >
+                                                    More Details
+                                                </button>
+                                                <button
+                                                    onClick={() => fetchTeacherCourses(teacher.email)}
+                                                    className="bg-green-600 text-white p-1 rounded-lg hover:bg-green-700 transition-all duration-300"
+                                                >
+                                                    Show Assigned Courses
+                                                </button>
+                                            </div>
                                         </li>
                                     ))
                                 ) : (
@@ -190,6 +259,23 @@ const UserList = () => {
                                     <p><strong>Address:</strong> {teacherDetails.address || 'null'}</p>
                                     <p><strong>Department:</strong> {teacherDetails.department?.name || teacherDetails.departmentName || 'null'}</p>
                                     <p><strong>Designation:</strong> {teacherDetails.designation || 'null'}</p>
+                                </div>
+                            )}
+                            {teacherCourses.length > 0 && (
+                                <div className="mt-4 p-4 bg-gray-100 rounded shadow">
+                                    <h3 className="text-lg font-semibold mb-2 text-gray-700">Assigned Courses</h3>
+                                    {teacherCourses.map((course, index) => (
+                                        <div key={index}>
+                                            <p><strong>Year:</strong> {course.year || 'N/A'}</p>
+                                            <p><strong>Semester:</strong> {course.semester || 'N/A'}</p>
+                                            <p><strong>Courses1:</strong> {course.course1 || 'N/A'}</p>
+                                            <p><strong>Courses2:</strong> {course.course2 || 'N/A'}</p>
+                                            <p><strong>Courses3:</strong> {course.course3 || 'N/A'}</p>
+                                            <p><strong>Courses4:</strong> {course.course4 || 'N/A'}</p>
+                                            <p><strong>Courses5:</strong> {course.course5 || 'N/A'}</p>
+                                            {index < teacherCourses.length - 1 && <hr className="my-4 border-gray-300" />}
+                                        </div>
+                                    ))}
                                 </div>
                             )}
                         </div>
