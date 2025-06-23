@@ -6,7 +6,6 @@ import Sidebar from '../components/Sidebar';
 
 const GiveAttendance = () => {
     const [teacherCourses, setTeacherCourses] = useState([]);
-    const [selectedYear, setSelectedYear] = useState('');
     const [selectedSemester, setSelectedSemester] = useState('');
     const [studentsByCourse, setStudentsByCourse] = useState({});
     const [activeCourse, setActiveCourse] = useState(null);
@@ -16,6 +15,7 @@ const GiveAttendance = () => {
     const navigate = useNavigate();
     const today = new Date().toLocaleDateString();
     const todayDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const currentYear = new Date().getFullYear();
 
     useEffect(() => {
         const token = getAuthToken();
@@ -41,7 +41,7 @@ const GiveAttendance = () => {
                 console.log('Fetched Email:', email);
 
                 const response = await api.get('/teachers/status', {
-                    params: { teacherEmail: email },
+                    params: { teacherEmail: email, year: currentYear },
                     headers: { Authorization: `Bearer ${token}` },
                 });
                 console.log('Teacher Courses Response:', response.data);
@@ -55,14 +55,7 @@ const GiveAttendance = () => {
         };
 
         fetchTeacherCourses();
-    }, [navigate]);
-
-    const handleYearChange = (e) => {
-        setSelectedYear(e.target.value);
-        setActiveCourse(null);
-        setStudentsByCourse({});
-        setAttendanceStatus({});
-    };
+    }, [navigate, currentYear]);
 
     const handleSemesterChange = (e) => {
         setSelectedSemester(e.target.value);
@@ -72,16 +65,16 @@ const GiveAttendance = () => {
     };
 
     const handleGoAhead = async () => {
-        if (!selectedYear || !selectedSemester) {
-            setError('Please select both year and semester.');
+        if (!selectedSemester) {
+            setError('Please select a semester.');
             return;
         }
         try {
             const matchingCourses = teacherCourses.filter(course =>
-                course.year === parseInt(selectedYear) && course.semester === selectedSemester
+                course.year === currentYear && course.semester === selectedSemester
             );
             if (matchingCourses.length === 0) {
-                setError('No courses found for the selected year and semester.');
+                setError('No courses found for the selected semester and current year.');
                 setStudentsByCourse({});
                 return;
             }
@@ -259,16 +252,6 @@ const GiveAttendance = () => {
                 <div className="bg-white p-6 rounded-xl shadow-md">
                     <div className="mb-6 space-y-4">
                         <div>
-                            <label className="block text-gray-700 font-semibold mb-1">Select Year</label>
-                            <input
-                                type="number"
-                                value={selectedYear}
-                                onChange={handleYearChange}
-                                placeholder="Enter year (e.g., 2025)"
-                                className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            />
-                        </div>
-                        <div>
                             <label className="block text-gray-700 font-semibold mb-1">Today's Date</label>
                             <input
                                 type="text"
@@ -291,14 +274,14 @@ const GiveAttendance = () => {
                         </div>
                         <button
                             onClick={handleGoAhead}
-                            disabled={!selectedYear || !selectedSemester}
-                            className={`w-full p-2 rounded-lg transition-all duration-300 ${!selectedYear || !selectedSemester ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
+                            disabled={!selectedSemester}
+                            className={`w-full p-2 rounded-lg transition-all duration-300 ${!selectedSemester ? 'bg-gray-400 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'}`}
                         >
                             Go Ahead
                         </button>
                     </div>
 
-                    {selectedYear && selectedSemester && Object.keys(studentsByCourse).length > 0 && (
+                    {selectedSemester && Object.keys(studentsByCourse).length > 0 && (
                         <div className="mb-6">
                             <div className="flex space-x-4 mb-4 border-b">
                                 {Object.keys(studentsByCourse).map((courseCode) => (
