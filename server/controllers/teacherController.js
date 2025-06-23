@@ -60,7 +60,7 @@ exports.uploadAttendance = async (req, res) => {
 exports.uploadMarks = async (req, res) => {
     try {
         console.log('Received marks update:', req.body);
-        const { email, marks, courseCode } = req.body;
+        const { email, marks, courseCode } = req.method === 'PUT' ? req.body : req.body; // Handle both POST and PUT
         if (!email || marks == null || !courseCode) {
             return res.status(400).json({ message: 'Email, marks, and courseCode are required' });
         }
@@ -90,7 +90,7 @@ exports.uploadMarks = async (req, res) => {
             courseData = { attendanceRecords: [], incourseMarks: 0, eligibleForForm: 'No' };
             studentAttendance.courses.set(courseCode, courseData);
         }
-        courseData.incourseMarks = parsedMarks;
+        courseData.incourseMarks = parsedMarks; // Update existing marks
         await studentAttendance.save();
         console.log('Marks updated for:', email, courseCode, parsedMarks);
         res.status(200).json({ message: 'Marks updated successfully' });
@@ -210,6 +210,27 @@ exports.getStudentsBySemesterAndDepartment = async (req, res) => {
         }).select('name email');
         res.status(200).json(students);
     } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+exports.getStudentMarks = async (req, res) => {
+    try {
+        const { email, courseCode } = req.query;
+        if (!email || !courseCode) {
+            return res.status(400).json({ message: 'Email and courseCode are required' });
+        }
+
+        const studentAttendance = await StudentAttendance.findOne({ email });
+        if (!studentAttendance) {
+            return res.status(404).json({ message: 'Student attendance not found' });
+        }
+
+        const courseData = studentAttendance.courses.get(courseCode);
+        const incourseMarks = courseData ? courseData.incourseMarks : 0;
+
+        res.status(200).json({ incourseMarks });
+    } catch (error) {
+        console.error('Get student marks error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
