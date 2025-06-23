@@ -1,4 +1,4 @@
-const StudentData = require('../models/StudentData');
+const StudentAttendance = require('../models/studentAttendance');
 const TeacherStatus = require('../models/TeacherStatus');
 const StudentStatus = require('../models/StudentStatus');
 const User = require('../models/User');
@@ -16,24 +16,35 @@ exports.uploadAttendance = async (req, res) => {
             .pipe(csv())
             .on('data', (data) => results.push(data))
             .on('end', async () => {
-                console.log('Parsed CSV data:', results); // Debug the parsed data
+                console.log('Parsed CSV data:', results);
                 for (const record of results) {
                     const user = await User.findOne({ email: record.email });
                     if (user && user.role === 'student') {
-                        const studentData = await StudentData.findOne({ userId: user._id });
-                        if (studentData) {
-                            const presentValue = String(record.present).trim().toLowerCase();
-                            const isPresent = ['true', 'yes', '1'].includes(presentValue);
-                            console.log(`Processing attendance for ${record.email}: date=${record.date}, present=${presentValue}, interpreted as ${isPresent}`); // Debug each record
-                            const attendanceRecord = {
-                                date: new Date(record.date),
-                                present: isPresent,
-                            };
-                            studentData.attendanceRecords.push(attendanceRecord);
-                            await studentData.save();
-                        } else {
-                            console.log(`Student data not found for ${record.email}`);
+                        let studentAttendance = await StudentAttendance.findOne({ email: record.email });
+                        if (!studentAttendance) {
+                            studentAttendance = new StudentAttendance({
+                                email: record.email,
+                                name: user.name || record.name || 'N/A',
+                                departmentName: record.departmentName || 'N/A',
+                                semester: parseInt(record.semester) || 1,
+                                courses: new Map(),
+                            });
                         }
+                        const presentValue = String(record.present).trim().toLowerCase();
+                        const isPresent = ['true', 'yes', '1'].includes(presentValue);
+                        console.log(`Processing attendance for ${record.email}: date=${record.date}, present=${presentValue}, interpreted as ${isPresent}`);
+                        const attendanceRecord = {
+                            date: new Date(record.date),
+                            present: isPresent,
+                        };
+                        const courseCode = record.courseCode || 'DEFAULT';
+                        let courseData = studentAttendance.courses.get(courseCode);
+                        if (!courseData) {
+                            courseData = { attendanceRecords: [], incourseMarks: 0, eligibleForForm: 'No' };
+                            studentAttendance.courses.set(courseCode, courseData);
+                        }
+                        courseData.attendanceRecords.push(attendanceRecord);
+                        await studentAttendance.save();
                     } else {
                         console.log(`Student not found or not a student: ${record.email}`);
                     }
@@ -49,9 +60,9 @@ exports.uploadAttendance = async (req, res) => {
 exports.uploadMarks = async (req, res) => {
     try {
         console.log('Received marks update:', req.body);
-        const { email, marks } = req.body;
-        if (!email || marks == null) {
-            return res.status(400).json({ message: 'Email and marks are required' });
+        const { email, marks, courseCode } = req.body;
+        if (!email || marks == null || !courseCode) {
+            return res.status(400).json({ message: 'Email, marks, and courseCode are required' });
         }
         const parsedMarks = Number(marks);
         if (isNaN(parsedMarks) || parsedMarks < 0 || parsedMarks > 100) {
@@ -63,15 +74,25 @@ exports.uploadMarks = async (req, res) => {
             return res.status(404).json({ message: 'Student not found' });
         }
 
-        let studentData = await StudentData.findOne({ userId: user._id });
-        if (!studentData) {
-            studentData = new StudentData({ userId: user._id, attendanceRecords: [], incourseMarks: 0 });
-            await studentData.save();
+        let studentAttendance = await StudentAttendance.findOne({ email });
+        if (!studentAttendance) {
+            studentAttendance = new StudentAttendance({
+                email: email,
+                name: user.name || 'N/A',
+                departmentName: 'N/A',
+                semester: 1,
+                courses: new Map(),
+            });
         }
 
-        studentData.incourseMarks = parsedMarks;
-        await studentData.save();
-        console.log('Marks updated for:', email, parsedMarks);
+        let courseData = studentAttendance.courses.get(courseCode);
+        if (!courseData) {
+            courseData = { attendanceRecords: [], incourseMarks: 0, eligibleForForm: 'No' };
+            studentAttendance.courses.set(courseCode, courseData);
+        }
+        courseData.incourseMarks = parsedMarks;
+        await studentAttendance.save();
+        console.log('Marks updated for:', email, courseCode, parsedMarks);
         res.status(200).json({ message: 'Marks updated successfully' });
     } catch (error) {
         console.error('Upload marks error:', error);
@@ -81,16 +102,81 @@ exports.uploadMarks = async (req, res) => {
 
 exports.getStudentsBySubject = async (req, res) => {
     try {
-        const { subject } = req.query; // Assume subject is passed as a query parameter
+        const { subject } = req.query;
         if (!subject) {
             return res.status(400).json({ message: 'Subject is required' });
         }
-
-        // For simplicity, assume all students are under a default subject for now
         const students = await User.find({ role: 'student' }).select('name email');
         res.status(200).json({ students });
     } catch (error) {
         console.error('Get students error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getStudentsByCourse = async (req, res) => {
+    try {
+        const { courseCode, date } = req.query;
+        if (!courseCode || !date) {
+            return res.status(400).json({ message: 'Course code and date are required' });
+        }
+        const dateStr = new Date(date).toISOString().split('T')[0]; // e.g., "2025-06-23"
+
+        const attendanceData = await StudentAttendance.aggregate([
+            {
+                $match: {
+                    'courses': { $exists: true }
+                }
+            },
+            {
+                $project: {
+                    email: 1,
+                    name: 1,
+                    coursesArray: { $objectToArray: '$courses' }
+                }
+            },
+            {
+                $unwind: '$coursesArray'
+            },
+            {
+                $match: {
+                    'coursesArray.k': courseCode
+                }
+            },
+            {
+                $unwind: '$coursesArray.v.attendanceRecords'
+            },
+            {
+                $project: {
+                    email: 1,
+                    name: 1,
+                    attendanceDate: { $dateToString: { format: '%Y-%m-%d', date: '$coursesArray.v.attendanceRecords.date' } },
+                    present: '$coursesArray.v.attendanceRecords.present'
+                }
+            },
+            {
+                $match: {
+                    attendanceDate: dateStr
+                }
+            },
+            {
+                $project: {
+                    name: 1,
+                    email: 1,
+                    attendanceStatus: {
+                        $cond: {
+                            if: '$present',
+                            then: 'Present',
+                            else: 'Absent'
+                        }
+                    }
+                }
+            }
+        ]);
+
+        res.status(200).json(attendanceData);
+    } catch (error) {
+        console.error('Get students by course error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
