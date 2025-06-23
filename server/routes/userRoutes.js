@@ -5,6 +5,7 @@ const authController = require('../controllers/authController');
 const dashboardController = require('../controllers/dashboardController');
 const teacherController = require('../controllers/teacherController');
 const adminController = require('../controllers/adminController');
+const studentAttendanceController = require('../controllers/studentAttendanceController');
 const { authMiddleware, restrictTo } = require('../middlewares/authMiddleware');
 const multer = require('multer');
 
@@ -39,6 +40,9 @@ router.get('/students/status/courses', authMiddleware, restrictTo('admin'), admi
 router.post('/students/status', authMiddleware, restrictTo('admin'), adminController.saveStudentStatus);
 router.get('/teachers/students-by-semester-dept', authMiddleware, restrictTo('teacher'), teacherController.getStudentsBySemesterAndDepartment);
 router.get('/courses', authMiddleware, restrictTo('teacher', 'admin'), adminController.getCourses);
+router.get('/students/attendance/:email', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.getAttendance);
+router.post('/students/attendance', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.createAttendance);
+router.put('/students/attendance/:id', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.updateAttendance);
 
 
 module.exports = router;
