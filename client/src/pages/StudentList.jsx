@@ -12,6 +12,8 @@ const StudentList = () => {
     const [activeCourse, setActiveCourse] = useState(null);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [message, setMessage] = useState('');
+    const [attendanceStats, setAttendanceStats] = useState({});
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -53,6 +55,29 @@ const StudentList = () => {
 
         fetchTeacherCourses();
     }, [navigate]);
+
+    useEffect(() => {
+        const fetchAttendanceStats = async () => {
+            if (activeCourse) {
+                const newStats = {};
+                for (const student of studentsByCourse[activeCourse] || []) {
+                    try {
+                        const statsResponse = await api.get('/teachers/student-attendance-stats', {
+                            params: { email: student.email, courseCode: activeCourse },
+                            headers: { Authorization: `Bearer ${getAuthToken()}` },
+                        });
+                        newStats[student.email] = statsResponse.data;
+                        console.log(`Stats for ${student.email}:`, statsResponse.data); // Debug log
+                    } catch (err) {
+                        console.error(`Error fetching stats for ${student.email}:`, err);
+                        newStats[student.email] = { daysPresent: 0, totalDays: 0, attendancePercentage: 0 };
+                    }
+                }
+                setAttendanceStats(newStats);
+            }
+        };
+        fetchAttendanceStats();
+    }, [activeCourse, studentsByCourse]);
 
     const handleYearChange = (e) => {
         setSelectedYear(e.target.value);
@@ -101,19 +126,17 @@ const StudentList = () => {
         }
         setActiveCourse(courseCode);
         try {
-            // Match courseCode with Course database
             const courseResponse = await api.get('/courses', {
                 params: { courseCode },
                 headers: { Authorization: `Bearer ${getAuthToken()}` },
             });
-            const course = courseResponse.data[0]; // Assuming it returns an array
+            const course = courseResponse.data[0];
             if (!course) {
                 setError(`Course ${courseCode} not found`);
                 setStudentsByCourse(prev => ({ ...prev, [courseCode]: [] }));
                 return;
             }
 
-            // Fetch students from StudentStatus based on semester and departmentName
             const studentsResponse = await api.get('/teachers/students-by-semester-dept', {
                 params: { 
                     semester: course.semester,
@@ -130,6 +153,32 @@ const StudentList = () => {
         }
     };
 
+    const handleEligibleClick = async (email) => {
+    try {
+        const token = getAuthToken();
+        console.log('Token used:', token); // Debug log
+        if (!token) {
+            setError('No authentication token available');
+            return;
+        }
+
+        const stats = attendanceStats[email];
+        if (stats && stats.attendancePercentage >= 60) {
+            const response = await api.put('/teachers/update-eligible', {
+                params: { email, courseCode: activeCourse },
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setMessage(response.data.message);
+        } else {
+            setError('Attendance percentage must be 60% or higher to mark as eligible');
+        }
+    } catch (err) {
+        const errorMessage = err.response?.data?.message || 'Failed to update eligibility';
+        setError(`${errorMessage}: ${err.message || 'Check token or server'}`);
+        console.error('Eligibility update error:', err.response?.data || err);
+    }
+};
+
     if (loading) return <div className="text-center p-4">Loading...</div>;
     if (error) return <div className="text-red-500 text-center p-4">{error}</div>;
 
@@ -139,6 +188,8 @@ const StudentList = () => {
             <div className="flex-1 p-8 overflow-auto">
                 <h1 className="text-3xl font-bold mb-6 text-gray-800">Student List</h1>
                 <div className="bg-white p-6 rounded-xl shadow-md">
+                    {message && <p className="text-green-600 mb-4">{message}</p>}
+                    {error && <p className="text-red-500 mb-4">{error}</p>}
                     <div className="mb-6 space-y-4">
                         <div>
                             <label className="block text-gray-700 font-semibold mb-1">Select Year</label>
@@ -186,12 +237,30 @@ const StudentList = () => {
                             </div>
                             {activeCourse && studentsByCourse[activeCourse] && studentsByCourse[activeCourse].length > 0 ? (
                                 <ul className="space-y-2">
-                                    {studentsByCourse[activeCourse].map((student) => (
-                                        <li key={student._id || student.email} className="border-b pb-2">
-                                            <span className="font-semibold">{student.name || student.fullName}</span>
-                                            <span className="ml-4 text-gray-600">{student.email}</span>
-                                        </li>
-                                    ))}
+                                    {studentsByCourse[activeCourse].map((student) => {
+                                        const stats = attendanceStats[student.email] || { daysPresent: 0, totalDays: 0, attendancePercentage: 0 };
+                                        const isEligible = stats.attendancePercentage >= 60;
+                                        return (
+                                            <li key={student._id || student.email} className="border-b pb-2 flex items-center justify-between">
+                                                <div>
+                                                    <span className="font-semibold">{student.name || student.fullName}</span>
+                                                    <span className="ml-4 text-gray-600">{student.email}</span>
+                                                </div>
+                                                <div className="flex space-x-2 items-center">
+                                                    <span className="text-gray-600">
+                                                        {`${stats.daysPresent}/${stats.totalDays} (${stats.attendancePercentage}%)`}
+                                                    </span>
+                                                    <button
+                                                        onClick={() => handleEligibleClick(student.email)}
+                                                        disabled={!isEligible}
+                                                        className={`px-3 py-1 rounded-lg transition-all duration-300 ${isEligible ? 'bg-green-600 text-white hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'}`}
+                                                    >
+                                                        Eligible
+                                                    </button>
+                                                </div>
+                                            </li>
+                                        );
+                                    })}
                                 </ul>
                             ) : activeCourse ? (
                                 <p className="text-gray-600">No students enrolled in this course.</p>

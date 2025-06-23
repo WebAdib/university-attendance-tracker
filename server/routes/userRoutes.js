@@ -39,9 +39,11 @@ router.get('/teachers/detail', authMiddleware, restrictTo('teacher','admin'), ad
 router.get('/teachers/students-by-course', authMiddleware, restrictTo('teacher', 'admin'), teacherController.getStudentsByCourse);
 router.put('/teachers/upload-marks', authMiddleware, restrictTo('teacher', 'admin'), teacherController.uploadMarks);
 router.get('/teachers/student-marks', authMiddleware, restrictTo('teacher', 'admin'), teacherController.getStudentMarks);
+router.get('/teachers/student-attendance-stats', authMiddleware, restrictTo('teacher', 'admin'), teacherController.getStudentAttendanceStats);
+router.put('/teachers/update-eligible', authMiddleware, restrictTo('teacher', 'admin'), teacherController.updateEligibleForForm);
+router.get('/teachers/students-by-semester-dept', authMiddleware, restrictTo('teacher'), teacherController.getStudentsBySemesterAndDepartment);
 router.get('/students/status/courses', authMiddleware, restrictTo('admin'), adminController.getStudentStatusCourses);
 router.post('/students/status', authMiddleware, restrictTo('admin'), adminController.saveStudentStatus);
-router.get('/teachers/students-by-semester-dept', authMiddleware, restrictTo('teacher'), teacherController.getStudentsBySemesterAndDepartment);
 router.get('/courses', authMiddleware, restrictTo('teacher', 'admin'), adminController.getCourses);
 router.get('/students/attendance/:email', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.getAttendance);
 router.post('/students/attendance', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.createAttendance);

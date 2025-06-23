@@ -234,3 +234,64 @@ exports.getStudentMarks = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+exports.getStudentAttendanceStats = async (req, res) => {
+    try {
+        const { email, courseCode } = req.query;
+        if (!email || !courseCode) {
+            return res.status(400).json({ message: 'Email and courseCode are required' });
+        }
+
+        const studentAttendance = await StudentAttendance.findOne({ email });
+        if (!studentAttendance) {
+            return res.status(404).json({ message: 'Student attendance not found' });
+        }
+
+        const courseData = studentAttendance.courses.get(courseCode);
+        if (!courseData) {
+            return res.status(404).json({ message: 'Course data not found' });
+        }
+
+        const attendanceRecords = courseData.attendanceRecords || [];
+        console.log('Attendance Records:', attendanceRecords); // Debug log
+        const totalDays = attendanceRecords.length;
+        const daysPresent = attendanceRecords.filter(record => record.present === true).length;
+        const attendancePercentage = totalDays > 0 ? ((daysPresent / totalDays) * 100).toFixed(2) : 0;
+
+        res.status(200).json({
+            daysPresent,
+            totalDays,
+            attendancePercentage
+        });
+    } catch (error) {
+        console.error('Get student attendance stats error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.updateEligibleForForm = async (req, res) => {
+    try {
+        const { email, courseCode } = req.query;
+        if (!email || !courseCode) {
+            return res.status(400).json({ message: 'Email and courseCode are required' });
+        }
+
+        const studentAttendance = await StudentAttendance.findOne({ email });
+        if (!studentAttendance) {
+            return res.status(404).json({ message: 'Student attendance not found' });
+        }
+
+        const courseData = studentAttendance.courses.get(courseCode);
+        if (!courseData) {
+            return res.status(404).json({ message: 'Course data not found' });
+        }
+
+        courseData.eligibleForForm = 'Yes';
+        await studentAttendance.save();
+
+        res.status(200).json({ message: 'Eligible status updated to Yes' });
+    } catch (error) {
+        console.error('Update eligible status error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
