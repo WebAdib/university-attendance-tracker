@@ -6,6 +6,7 @@ const TeacherDetail = require('../models/TeacherDetails');
 const StudentDetail = require('../models/StudentDetails');
 const TeacherStatus = require('../models/TeacherStatus');
 const StudentStatus = require('../models/StudentStatus');
+const StudentAttendance = require('../models/studentAttendance');
 const multer = require('multer');
 const fs = require('fs').promises;
 const csv = require('csv-parser');
@@ -148,7 +149,6 @@ exports.setFormFillUp = async (req, res) => {
 
 exports.getFormSubmissions = async (req, res) => {
     try {
-        
         const submissions = await api.get('/students/submit-form/status'); 
         res.status(200).json(submissions.data);
     } catch (error) {
@@ -210,7 +210,7 @@ exports.addStudentDetails = async (req, res) => {
             enrollmentYear,
             guardianContact,
             department: selectedDept._id,
-            departmentName: selectedDept.name, // Set department name
+            departmentName: selectedDept.name,
             user: user._id,
         });
         await studentDetail.save();
@@ -247,6 +247,7 @@ exports.getTeacherDetails = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
 exports.addTeacherStatus = async (req, res) => {
     try {
         const { department, teacher, semester, year, course1, course2, course3, course4, course5 } = req.body;
@@ -336,9 +337,9 @@ exports.getStudentStatusCourses = async (req, res) => {
 
 exports.saveStudentStatus = async (req, res) => {
     try {
-        const { email, paymentStatus } = req.body;
-        if (!email || !paymentStatus) {
-            return res.status(400).json({ message: 'Email and payment status are required' });
+        const { email, paymentStatus, semester } = req.body;
+        if (!email || !paymentStatus || !semester) {
+            return res.status(400).json({ message: 'Email, payment status, and semester are required' });
         }
         if (paymentStatus !== 'done' && paymentStatus !== 'pending') {
             return res.status(400).json({ message: 'Invalid payment status' });
@@ -349,7 +350,7 @@ exports.saveStudentStatus = async (req, res) => {
             return res.status(404).json({ message: 'Student not found' });
         }
 
-        const existingStatus = await StudentStatus.findOne({ email, semester: studentDetail.semester });
+        const existingStatus = await StudentStatus.findOne({ email, semester: parseInt(semester) });
         if (existingStatus && paymentStatus === 'done') {
             return res.status(400).json({ message: 'Student status already confirmed for this semester' });
         }
@@ -358,12 +359,37 @@ exports.saveStudentStatus = async (req, res) => {
             email: studentDetail.email,
             name: studentDetail.fullName,
             departmentName: studentDetail.departmentName,
-            semester: parseInt(req.body.semester),
+            semester: parseInt(semester),
             paymentStatus,
         });
         await studentStatus.save();
 
-        res.status(201).json({ message: 'Student status saved successfully' });
+        // Create studentAttendance document
+        const courses = await Course.find({
+            department: studentDetail.department,
+            semester: parseInt(semester),
+        }).select('courseCode');
+
+        const attendanceData = {
+            email: studentDetail.email,
+            name: studentDetail.fullName,
+            departmentName: studentDetail.departmentName,
+            semester: parseInt(semester),
+            courses: new Map(),
+        };
+
+        courses.forEach(course => {
+            attendanceData.courses.set(course.courseCode, {
+                attendanceRecords: [],
+                incourseMarks: 0,
+                eligibleForForm: 'No',
+            });
+        });
+
+        const studentAttendance = new StudentAttendance(attendanceData);
+        await studentAttendance.save();
+
+        res.status(201).json({ message: 'Student status and attendance saved successfully' });
     } catch (error) {
         console.error('Save student status error:', error);
         res.status(500).json({ message: 'Server error' });
@@ -381,9 +407,6 @@ exports.getDepartmentById = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
-
-
-
 
 exports.getCourses = async (req, res) => {
     try {

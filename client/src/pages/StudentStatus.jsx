@@ -54,6 +54,7 @@ const StudentStatus = () => {
             setMessage(response.data.message);
             setError('');
             setPaymentStatus('pending'); // Reset for next use
+            setShowDetails(false); // Hide details after confirmation
         } catch (err) {
             setError(err.response?.data?.message || 'Failed to save student status');
             console.error('Save status error:', err);
