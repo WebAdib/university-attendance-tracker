@@ -49,6 +49,7 @@ router.get('/students/attendance/:email', authMiddleware, restrictTo('teacher', 
 router.post('/students/attendance', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.createAttendance);
 router.put('/students/attendance/:id', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.updateAttendance);
 router.get('/students/detail', dashboardController.getStudentDetails);
+router.get('/students/assigned-courses', dashboardController.getAssignedCourses);
 
 
 
