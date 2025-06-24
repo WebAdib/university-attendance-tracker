@@ -25,6 +25,8 @@ router.post('/departments', authMiddleware, restrictTo('admin'), adminController
 router.post('/courses', authMiddleware, restrictTo('admin'), adminController.addCourse);
 router.post('/courses/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), adminController.bulkUploadCourses);
 router.post('/form-fill-up', authMiddleware, restrictTo('admin'), upload.single('file'), adminController.setFormFillUp);
+router.get('/form-fill-up/latest', authMiddleware, restrictTo('student', 'admin'), adminController.getLatestFormFillUp);
+router.get('/form-fill-up/download/:filePath', authMiddleware, restrictTo('student', 'admin'), adminController.downloadFormFillUp);
 router.get('/students/submit-form/status', authMiddleware, restrictTo('admin'), adminController.getFormSubmissions);
 router.get('/students/dashboard', authMiddleware, restrictTo('student', 'admin'), dashboardController.getDashboard);
 router.get('/students/attendance-history', authMiddleware, restrictTo('student'), dashboardController.getAttendanceHistory);

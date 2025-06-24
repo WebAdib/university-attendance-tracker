@@ -200,6 +200,35 @@ exports.setFormFillUp = async (req, res) => {
         res.status(500).json({ message: 'Failed to release form' });
     }
 };
+exports.getLatestFormFillUp = async (req, res) => {
+    try {
+        const latestForm = await FormFillup.findOne().sort({ createdAt: -1 }); // Get the most recent record
+        if (!latestForm) {
+            return res.status(404).json({ message: 'No form available' });
+        }
+        res.status(200).json(latestForm);
+    } catch (error) {
+        console.error('Get latest form error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.downloadFormFillUp = async (req, res) => {
+    try {
+        const filePath = req.params.filePath;
+        const fullPath = path.join(__dirname, '..', filePath); // Adjust based on your project structure
+        await fs.access(fullPath, fs.constants.F_OK); // Check if file exists
+        res.download(fullPath, filePath.split('/').pop(), (err) => {
+            if (err) {
+                console.error('Download error:', err);
+                res.status(500).json({ message: 'Failed to download file' });
+            }
+        });
+    } catch (error) {
+        console.error('Download file error:', error);
+        res.status(500).json({ message: 'File not found' });
+    }
+};
 
 exports.getFormSubmissions = async (req, res) => {
     try {
