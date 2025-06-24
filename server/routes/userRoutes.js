@@ -17,7 +17,7 @@ router.get('/users/:id', authMiddleware, restrictTo('admin', 'teacher', 'student
 router.delete('/users', authMiddleware, restrictTo('admin'), adminController.deleteUser);
 router.post('/users/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), userController.bulkUploadUsers);
 router.post('/auth/login', authController.login);
-router.post('/admin-panel/add-notice', adminController.addNotice); // Primary add notice route
+router.post('/admin-panel/add-notice', adminController.addNotice);
 router.get('/notices', adminController.getNotices);
 router.delete('/notices/:id', adminController.deleteNotice);
 router.get('/departments', authMiddleware, restrictTo('admin'), adminController.getDepartments);

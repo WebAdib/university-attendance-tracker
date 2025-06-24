@@ -8,29 +8,32 @@ const FormFillUp = () => {
     const [startDate, setStartDate] = useState('');
     const [endDate, setEndDate] = useState('');
     const [file, setFile] = useState(null);
-    const [submissions, setSubmissions] = useState([]);
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchSubmissions = async () => {
-            try {
-                const response = await api.get('/students/submit-form/status', {
-                    headers: { Authorization: `Bearer ${getAuthToken()}` },
-                });
-                setSubmissions(response.data);
-            } catch (err) {
-                setError('Failed to fetch submissions');
-            }
-        };
-        fetchSubmissions();
-    }, []);
+        const token = getAuthToken();
+        if (!token) {
+            navigate('/');
+            return;
+        }
 
-    const handleSubmit = async (e) => {
+        const decoded = JSON.parse(atob(token.split('.')[1]));
+        if (decoded.role !== 'admin') {
+            navigate('/');
+            return;
+        }
+    }, [navigate]);
+
+    const handleReleaseForm = async (e) => {
         e.preventDefault();
         if (!file) {
             setError('Please upload a PDF file');
+            return;
+        }
+        if (!startDate || !endDate) {
+            setError('Please select both start and end dates');
             return;
         }
 
@@ -52,7 +55,7 @@ const FormFillUp = () => {
             setStartDate('');
             setEndDate('');
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to set form fill-up');
+            setError(err.response?.data?.message || 'Failed to release form');
             setMessage('');
         }
     };
@@ -61,11 +64,11 @@ const FormFillUp = () => {
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
             <div className="flex-1 p-8 overflow-auto">
-                <h1 className="text-3xl font-bold mb-6 text-gray-800">Form Fill-up</h1>
+                <h1 className="text-3xl font-bold mb-6 text-gray-800">Release Form for Fill-up</h1>
                 <div className="bg-white p-6 rounded-xl shadow-md">
                     {message && <p className="text-green-600 mb-4">{message}</p>}
                     {error && <p className="text-red-500 mb-4">{error}</p>}
-                    <form onSubmit={handleSubmit} className="space-y-4 mb-6">
+                    <form onSubmit={handleReleaseForm} className="space-y-4">
                         <div>
                             <label className="block text-gray-700 font-semibold mb-1">Start Date</label>
                             <input
@@ -93,21 +96,16 @@ const FormFillUp = () => {
                                 accept=".pdf"
                                 onChange={(e) => setFile(e.target.files[0])}
                                 className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                required
                             />
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-blue-600 text-white p-3 rounded-lg font-semibold hover:bg-blue-700 transition-all duration-300"
+                            className="w-full bg-green-600 text-white p-3 rounded-lg font-semibold hover:bg-green-700 transition-all duration-300"
                         >
-                            Set Form Fill-up
+                            Release Form
                         </button>
                     </form>
-                    <h2 className="text-xl font-semibold mb-4">Submitted Forms</h2>
-                    <ul className="space-y-2">
-                        {submissions.map(sub => (
-                            <li key={sub._id} className="border-b pb-2">{sub.email} - {sub.comments}</li>
-                        ))}
-                    </ul>
                 </div>
             </div>
         </div>

@@ -7,9 +7,11 @@ const StudentDetail = require('../models/StudentDetails');
 const TeacherStatus = require('../models/TeacherStatus');
 const StudentStatus = require('../models/StudentStatus');
 const StudentAttendance = require('../models/studentAttendance');
+const FormFillup = require('../models/FormFillup');
 const multer = require('multer');
 const fs = require('fs').promises;
 const csv = require('csv-parser');
+const path = require('path');
 
 const upload = multer({ dest: 'uploads/' });
 
@@ -166,18 +168,45 @@ exports.deleteNotice = async (req, res) => {
 
 exports.setFormFillUp = async (req, res) => {
     try {
+        console.log('Request body:', req.body);
+        console.log('Received file:', req.file);
         const { startDate, endDate } = req.body;
-        res.status(200).json({ message: 'Form fill-up dates set successfully' });
+        const file = req.file;
+
+        if (!startDate || !endDate || !file) {
+            return res.status(400).json({ message: 'All fields (start date, end date, and PDF) are required' });
+        }
+
+        // Generate a unique filename
+        const uniqueFilename = `${Date.now()}-${file.originalname}`;
+        const filePath = path.join('uploads', uniqueFilename);
+
+        // Move the uploaded file to the desired location
+        await fs.rename(file.path, filePath);
+        console.log('File moved to:', filePath);
+
+        const formFillup = await FormFillup.create({
+            startDate,
+            endDate,
+            file: filePath
+        });
+
+        res.status(200).json({ message: 'Form released successfully', formFillup });
     } catch (error) {
-        res.status(500).json({ message: 'Server error' });
+        console.error('Set form fill-up error:', error);
+        if (req.file) {
+            await fs.unlink(req.file.path).catch(err => console.error('Failed to clean up file:', err)); // Cleanup on failure
+        }
+        res.status(500).json({ message: 'Failed to release form' });
     }
 };
 
 exports.getFormSubmissions = async (req, res) => {
     try {
-        const submissions = await api.get('/students/submit-form/status'); 
-        res.status(200).json(submissions.data);
+        const submissions = await FormFillup.find().select('studentId eligible filled');
+        res.status(200).json(submissions);
     } catch (error) {
+        console.error('Get form submissions error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
