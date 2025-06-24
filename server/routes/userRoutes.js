@@ -13,15 +13,17 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post('/users', authMiddleware, restrictTo('admin'), userController.createUser);
 router.get('/users', authMiddleware, restrictTo('admin'), adminController.getUsers);
-router.get('/users/:id', authMiddleware, restrictTo('admin', 'teacher','student'), userController.getUserById);
+router.get('/users/:id', authMiddleware, restrictTo('admin', 'teacher', 'student'), userController.getUserById);
 router.delete('/users', authMiddleware, restrictTo('admin'), adminController.deleteUser);
 router.post('/users/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), userController.bulkUploadUsers);
 router.post('/auth/login', authController.login);
+router.post('/admin-panel/add-notice', adminController.addNotice); // Primary add notice route
+router.get('/notices', adminController.getNotices);
+router.delete('/notices/:id', adminController.deleteNotice);
 router.get('/departments', authMiddleware, restrictTo('admin'), adminController.getDepartments);
 router.post('/departments', authMiddleware, restrictTo('admin'), adminController.addDepartment);
 router.post('/courses', authMiddleware, restrictTo('admin'), adminController.addCourse);
 router.post('/courses/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), adminController.bulkUploadCourses);
-router.post('/notices', authMiddleware, restrictTo('admin'), adminController.addNotice);
 router.post('/form-fill-up', authMiddleware, restrictTo('admin'), upload.single('file'), adminController.setFormFillUp);
 router.get('/students/submit-form/status', authMiddleware, restrictTo('admin'), adminController.getFormSubmissions);
 router.get('/students/dashboard', authMiddleware, restrictTo('student', 'admin'), dashboardController.getDashboard);
@@ -30,12 +32,12 @@ router.post('/students/submit-form', authMiddleware, restrictTo('student'), dash
 router.post('/teachers/upload-attendance', authMiddleware, restrictTo('teacher'), upload.single('file'), teacherController.uploadAttendance);
 router.post('/teachers/upload-marks', authMiddleware, restrictTo('teacher'), teacherController.uploadMarks);
 router.get('/teachers/students', authMiddleware, restrictTo('teacher'), teacherController.getStudentsBySubject);
-router.post('/teachers/details', authMiddleware, restrictTo('admin'), adminController.addTeacherDetails); 
-router.post('/students/details', authMiddleware, restrictTo('student','admin'), adminController.addStudentDetails); 
+router.post('/teachers/details', authMiddleware, restrictTo('admin'), adminController.addTeacherDetails);
+router.post('/students/details', authMiddleware, restrictTo('student', 'admin'), adminController.addStudentDetails);
 router.post('/teacher-status', authMiddleware, restrictTo('admin'), adminController.addTeacherStatus);
 router.get('/teachers/status', authMiddleware, restrictTo('teacher', 'admin'), teacherController.getTeacherStatus);
-router.get('/teachers/details', authMiddleware, restrictTo('teacher','admin'), adminController.getTeachersByDepartment);
-router.get('/teachers/detail', authMiddleware, restrictTo('teacher','admin'), adminController.getTeacherDetails);
+router.get('/teachers/details', authMiddleware, restrictTo('teacher', 'admin'), adminController.getTeachersByDepartment);
+router.get('/teachers/detail', authMiddleware, restrictTo('teacher', 'admin'), adminController.getTeacherDetails);
 router.get('/teachers/students-by-course', authMiddleware, restrictTo('teacher', 'admin'), teacherController.getStudentsByCourse);
 router.put('/teachers/upload-marks', authMiddleware, restrictTo('teacher', 'admin'), teacherController.uploadMarks);
 router.get('/teachers/student-marks', authMiddleware, restrictTo('teacher', 'admin'), teacherController.getStudentMarks);
@@ -50,7 +52,5 @@ router.post('/students/attendance', authMiddleware, restrictTo('teacher', 'admin
 router.put('/students/attendance/:id', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.updateAttendance);
 router.get('/students/detail', dashboardController.getStudentDetails);
 router.get('/students/assigned-courses', dashboardController.getAssignedCourses);
-
-
 
 module.exports = router;

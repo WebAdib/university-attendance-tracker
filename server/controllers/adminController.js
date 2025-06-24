@@ -129,10 +129,36 @@ exports.bulkUploadCourses = async (req, res) => {
 
 exports.addNotice = async (req, res) => {
     try {
-        const { title, content, startDate, endDate } = req.body;
-        const notice = new Notice({ title, content, startDate, endDate });
+        const { title, content } = req.body;
+        if (!title || !content) {
+            return res.status(400).json({ message: 'Title and content are required' });
+        }
+        const notice = new Notice({ title, content });
         await notice.save();
-        res.status(201).json({ message: 'Notice added successfully' });
+        res.status(201).json({ message: 'Notice added successfully', notice });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.getNotices = async (req, res) => {
+    try {
+        const notices = await Notice.find();
+        res.status(200).json(notices);
+    } catch (error) {
+        console.error('Get notices error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+exports.deleteNotice = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const notice = await Notice.findByIdAndDelete(id);
+        if (!notice) {
+            return res.status(404).json({ message: 'Notice not found' });
+        }
+        res.status(200).json({ message: 'Notice deleted successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
