@@ -21,6 +21,9 @@ import AddStudentDetails from './pages/AddStudentDetails';
 import TeacherStatus from './pages/TeacherStatus';
 import StudentStatus from './pages/StudentStatus';
 import MyDetails from './pages/MyDetails';
+import AssignedCourses from './pages/AssignedCourses';
+import Notices from './pages/Notices';
+import StudentDetails from './pages/StudentDetails';
 
 function App() {
     return (
@@ -48,7 +51,10 @@ function App() {
                 <Route path="/admin-panel/teacher-status" element={<TeacherStatus />} />
                 <Route path="/admin-panel/student-status" element={<StudentStatus />} />
                 <Route path="/teachers/my-details" element={<MyDetails />} />
-                
+                <Route path="/students/assigned-courses" element={<AssignedCourses />} />
+                <Route path="/students/notices" element={<Notices />} />
+                <Route path="/students/student-details" element={<StudentDetails />} />
+                <Route path="/students/submit-form" element={<SubmitForm />} />
             </Routes>
         </Router>
     );

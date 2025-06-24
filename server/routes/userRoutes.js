@@ -13,7 +13,7 @@ const upload = multer({ dest: 'uploads/' });
 
 router.post('/users', authMiddleware, restrictTo('admin'), userController.createUser);
 router.get('/users', authMiddleware, restrictTo('admin'), adminController.getUsers);
-router.get('/users/:id', authMiddleware, restrictTo('admin', 'teacher'), userController.getUserById);
+router.get('/users/:id', authMiddleware, restrictTo('admin', 'teacher','student'), userController.getUserById);
 router.delete('/users', authMiddleware, restrictTo('admin'), adminController.deleteUser);
 router.post('/users/bulk', authMiddleware, restrictTo('admin'), upload.single('file'), userController.bulkUploadUsers);
 router.post('/auth/login', authController.login);
@@ -31,7 +31,7 @@ router.post('/teachers/upload-attendance', authMiddleware, restrictTo('teacher')
 router.post('/teachers/upload-marks', authMiddleware, restrictTo('teacher'), teacherController.uploadMarks);
 router.get('/teachers/students', authMiddleware, restrictTo('teacher'), teacherController.getStudentsBySubject);
 router.post('/teachers/details', authMiddleware, restrictTo('admin'), adminController.addTeacherDetails); 
-router.post('/students/details', authMiddleware, restrictTo('admin'), adminController.addStudentDetails); 
+router.post('/students/details', authMiddleware, restrictTo('student','admin'), adminController.addStudentDetails); 
 router.post('/teacher-status', authMiddleware, restrictTo('admin'), adminController.addTeacherStatus);
 router.get('/teachers/status', authMiddleware, restrictTo('teacher', 'admin'), teacherController.getTeacherStatus);
 router.get('/teachers/details', authMiddleware, restrictTo('teacher','admin'), adminController.getTeachersByDepartment);
@@ -48,6 +48,7 @@ router.get('/courses', authMiddleware, restrictTo('teacher', 'admin'), adminCont
 router.get('/students/attendance/:email', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.getAttendance);
 router.post('/students/attendance', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.createAttendance);
 router.put('/students/attendance/:id', authMiddleware, restrictTo('teacher', 'admin'), studentAttendanceController.updateAttendance);
+router.get('/students/detail', dashboardController.getStudentDetails);
 
 
 

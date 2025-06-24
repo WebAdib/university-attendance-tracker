@@ -2,9 +2,9 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../utils/auth';
 import Sidebar from '../components/Sidebar';
-import { FaFileAlt } from 'react-icons/fa';
+import { FaBell } from 'react-icons/fa';
 
-const SubmitForm = () => {
+const Notices = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -24,18 +24,23 @@ const SubmitForm = () => {
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
             <div className="flex-1 p-8 overflow-auto">
-                <h1 className="text-3xl font-bold mb-6 text-gray-800">Submit Form</h1>
+                <h1 className="text-3xl font-bold mb-6 text-gray-800">Notices</h1>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <div className="bg-white p-6 rounded-xl shadow-md">
                         <div className="flex items-center space-x-4">
-                            <FaFileAlt className="text-4xl text-green-600" />
+                            <FaBell className="text-4xl text-yellow-600" />
                             <div>
-                                <h2 className="text-xl font-semibold text-gray-800">Form Details</h2>
-                                <div className="space-y-2 mt-2">
-                                    <p className="text-gray-600">Start Date: 2025-06-01</p>
-                                    <p className="text-gray-600">End Date: 2025-06-15</p>
-                                    <p className="text-gray-600">Form submission placeholder.</p>
-                                </div>
+                                <h2 className="text-xl font-semibold text-gray-800">Notice 1</h2>
+                                <p className="text-gray-600">Placeholder notice content.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="bg-white p-6 rounded-xl shadow-md">
+                        <div className="flex items-center space-x-4">
+                            <FaBell className="text-4xl text-yellow-600" />
+                            <div>
+                                <h2 className="text-xl font-semibold text-gray-800">Notice 2</h2>
+                                <p className="text-gray-600">Placeholder notice content.</p>
                             </div>
                         </div>
                     </div>
@@ -45,4 +50,4 @@ const SubmitForm = () => {
     );
 };
 
-export default SubmitForm;
+export default Notices;

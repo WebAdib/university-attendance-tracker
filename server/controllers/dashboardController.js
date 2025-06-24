@@ -1,4 +1,5 @@
 const StudentData = require('../models/StudentData');
+const StudentDetail = require('../models/StudentDetails');
 
 exports.getDashboard = async (req, res) => {
     try {
@@ -88,6 +89,24 @@ exports.submitForm = async (req, res) => {
         res.status(200).json({ message: 'Form submitted successfully', comments });
     } catch (error) {
         console.error('Form submission error:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+};
+
+
+
+exports.getStudentDetails = async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return res.status(400).json({ message: 'Email is required' });
+        }
+        const studentDetail = await StudentDetail.findOne({ email }).select(
+            'fullName email phoneNumber enrollmentYear guardianContact departmentName'
+        );
+        res.status(200).json(studentDetail || {});
+    } catch (error) {
+        console.error('Student details error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
