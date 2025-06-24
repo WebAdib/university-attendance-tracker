@@ -99,6 +99,12 @@ const Sidebar = () => {
                                 >
                                     <FaUser className="mr-3" /> My Details
                                 </Link>
+                                <Link
+                                    to="/teachers/notices"
+                                    className={`flex items-center p-4 ${location.pathname === '/teachers/notices' ? 'bg-blue-700' : 'hover:bg-blue-700'} transition-all duration-300`}
+                                >
+                                    <FaBell className="mr-3" /> Notices
+                                </Link>
                             </>
                         )}
                     </>

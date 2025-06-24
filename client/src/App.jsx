@@ -24,6 +24,7 @@ import MyDetails from './pages/MyDetails';
 import AssignedCourses from './pages/AssignedCourses';
 import Notices from './pages/Notices';
 import StudentDetails from './pages/StudentDetails';
+import TeacherNotices from './pages/TeacherNotices';
 
 function App() {
     return (
@@ -55,6 +56,7 @@ function App() {
                 <Route path="/students/notices" element={<Notices />} />
                 <Route path="/students/student-details" element={<StudentDetails />} />
                 <Route path="/students/submit-form" element={<SubmitForm />} />
+                <Route path="/teachers/notices" element={<TeacherNotices />} />
             </Routes>
         </Router>
     );

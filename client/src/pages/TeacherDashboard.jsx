@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { getAuthToken } from '../utils/auth';
 import Sidebar from '../components/Sidebar';
-import { FaBookOpen, FaList, FaCheckSquare, FaPen, FaUser } from 'react-icons/fa';
+import { FaBookOpen, FaList, FaCheckSquare, FaPen, FaUser, FaBell } from 'react-icons/fa';
 
 const TeacherDashboard = () => {
     const navigate = useNavigate();
@@ -74,6 +74,16 @@ const TeacherDashboard = () => {
                         <div>
                             <h2 className="text-xl font-semibold text-gray-800">My Details</h2>
                             <p className="text-gray-600">View your personal details</p>
+                        </div>
+                    </a>
+                    <a
+                        href="/teachers/notices"
+                        className="bg-white p-6 rounded-xl shadow-md flex items-center space-x-4 transform transition-all duration-300 hover:shadow-lg hover:bg-blue-50"
+                    >
+                        <FaBell className="text-4xl text-yellow-600" />
+                        <div>
+                            <h2 className="text-xl font-semibold text-gray-800">Notices</h2>
+                            <p className="text-gray-600">View latest notices</p>
                         </div>
                     </a>
                 </div>
