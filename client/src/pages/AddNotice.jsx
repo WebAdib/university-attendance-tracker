@@ -84,6 +84,15 @@ const AddNotice = () => {
         }
     };
 
+    // Format date to show only date part (e.g., "24/06/2025")
+    const formatDate = (date) => {
+        return date ? new Date(date).toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
+        }) : 'N/A';
+    };
+
     return (
         <div className="flex h-screen bg-gray-100">
             <Sidebar />
@@ -131,18 +140,19 @@ const AddNotice = () => {
                                 <p className="text-gray-600">No notices available.</p>
                             ) : (
                                 notices.map((notice) => (
-                                    <div key={notice._id} className="bg-white p-4 rounded-lg shadow-md flex items-center justify-between">
-                                        <div className="flex items-center space-x-4">
-                                            <FaBell className="text-3xl text-yellow-600" />
+                                    <div key={notice._id} className="bg-white p-4 rounded-lg shadow-md flex items-start justify-between">
+                                        <div className="flex items-start space-x-4">
+                                            <FaBell className="text-3xl text-yellow-600 mt-1" />
                                             <div>
                                                 <h2 className="text-lg font-semibold text-gray-800">{notice.title}</h2>
-                                                <p className="text-gray-600">{notice.content}</p>
+                                                <p className="text-gray-600 mt-1">{notice.content}</p>
+                                                <p className="text-gray-500 text-sm mt-1">{formatDate(notice.createdAt)}</p>
                                             </div>
                                         </div>
                                         {getAuthToken() && JSON.parse(atob(getAuthToken().split('.')[1])).role === 'admin' && (
                                             <button
                                                 onClick={() => handleDeleteNotice(notice._id)}
-                                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+                                                className="px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 mt-1"
                                             >
                                                 <FaTrash />
                                             </button>
